@@ -163,7 +163,7 @@ export const InsightsScreen: React.FC<InsightsScreenProps> = ({ theme }) => {
 
 const styles = StyleSheet.create({
   container: { flex: 1 },
-  content: { padding: 20, paddingBottom: 60 },
+  content: { padding: 20, paddingBottom: 110 },
   headerRow: {
     flexDirection: 'row',
     justifyContent: 'space-between',

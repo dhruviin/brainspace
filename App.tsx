@@ -1,10 +1,9 @@
 import React, { useCallback, useEffect, useState } from 'react';
-import { View, Text, StyleSheet, TouchableOpacity, SafeAreaView, Platform } from 'react-native';
+import { View, StyleSheet, SafeAreaView, Platform } from 'react-native';
 import { StatusBar } from 'expo-status-bar';
 import * as SplashScreen from 'expo-splash-screen';
 import { useFonts } from 'expo-font';
-import { Ionicons } from '@expo/vector-icons';
-import { MidnightDark, ArcticLight, ThemeColors, Fonts } from './src/theme/tokens';
+import { MidnightDark, ArcticLight, ThemeColors } from './src/theme/tokens';
 import { TabType } from './src/types';
 import { HomeScreen } from './src/screens/HomeScreen';
 import { InsightsScreen } from './src/screens/InsightsScreen';
@@ -13,6 +12,7 @@ import { RecoverScreen } from './src/screens/RecoverScreen';
 import { ProfileScreen } from './src/screens/ProfileScreen';
 import { UrgeModal } from './src/components/UrgeModal';
 import { LaunchSplash } from './src/components/LaunchSplash';
+import { LiquidTabBar } from './src/components/LiquidTabBar';
 
 export default function App() {
   const [fontsLoaded] = useFonts({
@@ -33,14 +33,6 @@ export default function App() {
   const toggleTheme = () => {
     setThemeMode((prev) => (prev === 'MidnightDark' ? 'ArcticLight' : 'MidnightDark'));
   };
-
-  const tabs: { key: TabType; label: string; icon: string; activeIcon: string }[] = [
-    { key: 'home', label: 'Home', icon: 'compass-outline', activeIcon: 'compass' },
-    { key: 'insights', label: 'Insights', icon: 'bar-chart-outline', activeIcon: 'bar-chart' },
-    { key: 'focus', label: 'Focus', icon: 'timer-outline', activeIcon: 'timer' },
-    { key: 'recover', label: 'Recover', icon: 'heart-outline', activeIcon: 'heart' },
-    { key: 'profile', label: 'Profile', icon: 'person-outline', activeIcon: 'person' },
-  ];
 
   return (
     <View style={styles.root}>
@@ -66,40 +58,12 @@ export default function App() {
           )}
         </View>
 
-        {/* 5-Tab Bottom Navigation Bar */}
-        <View style={[styles.bottomBar, { backgroundColor: theme.surface, borderTopColor: theme.border }]}>
-          {tabs.map((tab) => {
-            const isActive = currentTab === tab.key;
-            const iconColor = isActive ? (tab.key === 'recover' ? theme.recovery : theme.accent) : theme.textSecondary;
-            return (
-              <TouchableOpacity
-                key={tab.key}
-                style={styles.tabButton}
-                onPress={() => setCurrentTab(tab.key)}
-                accessibilityRole="button"
-                accessibilityLabel={tab.label}
-                accessibilityState={{ selected: isActive }}
-              >
-                <Ionicons
-                  name={(isActive ? tab.activeIcon : tab.icon) as any}
-                  size={22}
-                  color={iconColor}
-                />
-                <Text
-                  style={[
-                    styles.tabLabel,
-                    {
-                      color: iconColor,
-                      fontFamily: isActive ? Fonts.bold : Fonts.medium,
-                    },
-                  ]}
-                >
-                  {tab.label}
-                </Text>
-              </TouchableOpacity>
-            );
-          })}
-        </View>
+        {/* Liquid Tab Bar (EvolveX-inspired Floating Island Navigation) */}
+        <LiquidTabBar
+          currentTab={currentTab}
+          onSelectTab={setCurrentTab}
+          theme={theme}
+        />
 
         {/* Urge SOS Modal */}
         <UrgeModal
@@ -124,25 +88,5 @@ const styles = StyleSheet.create({
   },
   screenContainer: {
     flex: 1,
-  },
-  bottomBar: {
-    height: 64,
-    flexDirection: 'row',
-    borderTopWidth: 1,
-    alignItems: 'center',
-    justifyContent: 'space-around',
-    paddingHorizontal: 8,
-  },
-  tabButton: {
-    flex: 1,
-    height: 56,
-    alignItems: 'center',
-    justifyContent: 'center',
-    gap: 4,
-  },
-  tabLabel: {
-    fontFamily: Fonts.medium,
-    fontSize: 10,
-    letterSpacing: 0.2,
   },
 });

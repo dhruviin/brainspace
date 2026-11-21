@@ -139,7 +139,7 @@ export const RecoverScreen: React.FC<RecoverScreenProps> = ({ theme, onOpenUrge 
 
 const styles = StyleSheet.create({
   container: { flex: 1 },
-  content: { padding: 20, paddingBottom: 60 },
+  content: { padding: 20, paddingBottom: 110 },
   title: { fontFamily: Fonts.bold, fontSize: 24, marginTop: 10 },
   subtitle: { fontFamily: Fonts.regular, fontSize: 13, marginTop: 4, marginBottom: 20, lineHeight: 18 },
   sosBanner: {

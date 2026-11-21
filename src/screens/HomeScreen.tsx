@@ -174,7 +174,7 @@ export const HomeScreen: React.FC<HomeScreenProps> = ({ theme, onNavigateTab, on
 
 const styles = StyleSheet.create({
   container: { flex: 1 },
-  content: { padding: 20, paddingBottom: 60 },
+  content: { padding: 20, paddingBottom: 110 },
   topBar: {
     flexDirection: 'row',
     justifyContent: 'space-between',
