@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { View, Text, StyleSheet, ScrollView, TouchableOpacity } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
-import { ThemeColors } from '../theme/tokens';
+import { ThemeColors, Fonts } from '../theme/tokens';
 import { UsageStatsService, DailyUsageReport } from '../services/UsageStatsService';
 
 interface InsightsScreenProps {
@@ -171,8 +171,8 @@ const styles = StyleSheet.create({
     marginTop: 10,
     marginBottom: 4,
   },
-  title: { fontSize: 24, fontWeight: '800' },
-  subtitle: { fontSize: 13, marginTop: 4, marginBottom: 16, lineHeight: 18 },
+  title: { fontFamily: Fonts.bold, fontSize: 24 },
+  subtitle: { fontFamily: Fonts.regular, fontSize: 13, marginTop: 4, marginBottom: 16, lineHeight: 18 },
   refreshBtn: {
     padding: 10,
     borderRadius: 12,
@@ -187,7 +187,7 @@ const styles = StyleSheet.create({
     borderWidth: 1,
     marginBottom: 16,
   },
-  permissionText: { fontSize: 12, fontWeight: '600', flex: 1 },
+  permissionText: { fontFamily: Fonts.semiBold, fontSize: 12, flex: 1 },
   filterBar: {
     flexDirection: 'row',
     borderRadius: 14,
@@ -201,7 +201,7 @@ const styles = StyleSheet.create({
     borderRadius: 10,
     alignItems: 'center',
   },
-  filterText: { fontSize: 13 },
+  filterText: { fontFamily: Fonts.medium, fontSize: 13 },
   reelCard: {
     padding: 18,
     borderRadius: 20,
@@ -219,16 +219,16 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     gap: 8,
   },
-  cardTitle: { fontSize: 14, fontWeight: '700' },
+  cardTitle: { fontFamily: Fonts.bold, fontSize: 14 },
   badge: {
     paddingHorizontal: 8,
     paddingVertical: 4,
     borderRadius: 8,
   },
-  badgeText: { fontSize: 11, fontWeight: '700' },
-  reelTotal: { fontSize: 28, fontWeight: '800', marginBottom: 6 },
-  reelNotice: { fontSize: 12, lineHeight: 18 },
-  sectionHeading: { fontSize: 16, fontWeight: '700', marginBottom: 12 },
+  badgeText: { fontFamily: Fonts.bold, fontSize: 11 },
+  reelTotal: { fontFamily: Fonts.extraBold, fontSize: 28, marginBottom: 6 },
+  reelNotice: { fontFamily: Fonts.regular, fontSize: 12, lineHeight: 18 },
+  sectionHeading: { fontFamily: Fonts.bold, fontSize: 16, marginBottom: 12 },
   appList: { gap: 10 },
   appRow: {
     flexDirection: 'row',
@@ -251,14 +251,14 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     justifyContent: 'center',
   },
-  appName: { fontSize: 15, fontWeight: '600' },
-  appMeta: { fontSize: 11, marginTop: 2 },
+  appName: { fontFamily: Fonts.semiBold, fontSize: 15 },
+  appMeta: { fontFamily: Fonts.regular, fontSize: 11, marginTop: 2 },
   appRight: { alignItems: 'flex-end', gap: 4, marginLeft: 10 },
-  appTime: { fontSize: 15, fontWeight: '700' },
+  appTime: { fontFamily: Fonts.bold, fontSize: 15 },
   categoryPill: {
     paddingHorizontal: 8,
     paddingVertical: 2,
     borderRadius: 6,
   },
-  categoryPillText: { fontSize: 10, fontWeight: '700' },
+  categoryPillText: { fontFamily: Fonts.bold, fontSize: 10 },
 });

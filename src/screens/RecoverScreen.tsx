@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import { View, Text, StyleSheet, ScrollView, TouchableOpacity, Alert } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
-import { ThemeColors } from '../theme/tokens';
+import { ThemeColors, Fonts } from '../theme/tokens';
 import { HabitItem } from '../types';
 
 interface RecoverScreenProps {
@@ -140,8 +140,8 @@ export const RecoverScreen: React.FC<RecoverScreenProps> = ({ theme, onOpenUrge 
 const styles = StyleSheet.create({
   container: { flex: 1 },
   content: { padding: 20, paddingBottom: 60 },
-  title: { fontSize: 24, fontWeight: '800', marginTop: 10 },
-  subtitle: { fontSize: 13, marginTop: 4, marginBottom: 20, lineHeight: 18 },
+  title: { fontFamily: Fonts.bold, fontSize: 24, marginTop: 10 },
+  subtitle: { fontFamily: Fonts.regular, fontSize: 13, marginTop: 4, marginBottom: 20, lineHeight: 18 },
   sosBanner: {
     flexDirection: 'row',
     justifyContent: 'space-between',
@@ -159,9 +159,9 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     justifyContent: 'center',
   },
-  sosTitle: { fontSize: 14, fontWeight: '700' },
-  sosSub: { fontSize: 12, marginTop: 2, fontWeight: '600' },
-  sectionHeading: { fontSize: 16, fontWeight: '700', marginBottom: 12 },
+  sosTitle: { fontFamily: Fonts.bold, fontSize: 14 },
+  sosSub: { fontFamily: Fonts.semiBold, fontSize: 12, marginTop: 2 },
+  sectionHeading: { fontFamily: Fonts.bold, fontSize: 16, marginBottom: 12 },
   habitsList: { gap: 16 },
   habitCard: {
     padding: 18,
@@ -174,14 +174,14 @@ const styles = StyleSheet.create({
     alignItems: 'flex-start',
     marginBottom: 16,
   },
-  habitName: { fontSize: 16, fontWeight: '700' },
-  habitCategory: { fontSize: 11, marginTop: 3 },
+  habitName: { fontFamily: Fonts.bold, fontSize: 16 },
+  habitCategory: { fontFamily: Fonts.regular, fontSize: 11, marginTop: 3 },
   streakBadge: {
     paddingHorizontal: 10,
     paddingVertical: 5,
     borderRadius: 12,
   },
-  streakBadgeText: { fontSize: 12, fontWeight: '700' },
+  streakBadgeText: { fontFamily: Fonts.bold, fontSize: 12 },
   statsRow: {
     flexDirection: 'row',
     gap: 16,
@@ -192,9 +192,9 @@ const styles = StyleSheet.create({
     marginBottom: 14,
   },
   statBox: { flex: 1 },
-  statValue: { fontSize: 20, fontWeight: '800' },
-  statLabel: { fontSize: 11, marginTop: 2 },
-  checkInTitle: { fontSize: 12, fontWeight: '600', marginBottom: 8 },
+  statValue: { fontFamily: Fonts.extraBold, fontSize: 20 },
+  statLabel: { fontFamily: Fonts.medium, fontSize: 11, marginTop: 2 },
+  checkInTitle: { fontFamily: Fonts.semiBold, fontSize: 12, marginBottom: 8 },
   actionsRow: { flexDirection: 'row', gap: 8 },
   checkBtn: {
     flex: 1,
@@ -203,5 +203,5 @@ const styles = StyleSheet.create({
     borderWidth: 1,
     alignItems: 'center',
   },
-  checkBtnText: { fontSize: 12, fontWeight: '700' },
+  checkBtnText: { fontFamily: Fonts.bold, fontSize: 12 },
 });

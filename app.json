@@ -18,7 +18,8 @@
         "backgroundImage": "./assets/android-icon-background.png",
         "monochromeImage": "./assets/android-icon-monochrome.png"
       },
-      "predictiveBackGestureEnabled": false
+      "predictiveBackGestureEnabled": false,
+      "userInterfaceStyle": "automatic"
     },
     "web": {
       "favicon": "./assets/favicon.png"
@@ -37,6 +38,24 @@
         "expo-status-bar",
         {
           "style": "light"
+        }
+      ],
+      [
+        "expo-secure-store",
+        {
+          "faceIDPermission": false
+        }
+      ],
+      [
+        "expo-font",
+        {
+          "fonts": [
+            "./assets/fonts/Poppins-Regular.ttf",
+            "./assets/fonts/Poppins-Medium.ttf",
+            "./assets/fonts/Poppins-SemiBold.ttf",
+            "./assets/fonts/Poppins-Bold.ttf",
+            "./assets/fonts/Poppins-ExtraBold.ttf"
+          ]
         }
       ]
     ]

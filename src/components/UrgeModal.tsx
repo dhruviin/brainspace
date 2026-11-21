@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { View, Text, StyleSheet, Modal, TouchableOpacity } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
-import { ThemeColors } from '../theme/tokens';
+import { ThemeColors, Fonts } from '../theme/tokens';
 
 interface UrgeModalProps {
   visible: boolean;
@@ -148,10 +148,11 @@ const styles = StyleSheet.create({
     gap: 8,
   },
   title: {
+    fontFamily: Fonts.bold,
     fontSize: 18,
-    fontWeight: '700',
   },
   subtitle: {
+    fontFamily: Fonts.regular,
     fontSize: 14,
     marginBottom: 20,
     lineHeight: 20,
@@ -164,22 +165,23 @@ const styles = StyleSheet.create({
     marginBottom: 20,
   },
   phaseText: {
+    fontFamily: Fonts.bold,
     fontSize: 14,
-    fontWeight: '800',
     letterSpacing: 2,
     marginBottom: 4,
   },
   counterText: {
+    fontFamily: Fonts.extraBold,
     fontSize: 48,
-    fontWeight: '900',
   },
   breathTip: {
+    fontFamily: Fonts.medium,
     fontSize: 12,
     marginTop: 6,
   },
   sectionTitle: {
+    fontFamily: Fonts.semiBold,
     fontSize: 14,
-    fontWeight: '600',
     marginBottom: 12,
   },
   actionGrid: {
@@ -198,6 +200,7 @@ const styles = StyleSheet.create({
     borderWidth: 1,
   },
   actionText: {
+    fontFamily: Fonts.medium,
     fontSize: 13,
   },
   doneBtn: {
@@ -208,7 +211,7 @@ const styles = StyleSheet.create({
   },
   doneBtnText: {
     color: '#FFFFFF',
+    fontFamily: Fonts.bold,
     fontSize: 16,
-    fontWeight: '700',
   },
 });

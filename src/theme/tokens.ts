@@ -42,3 +42,18 @@ export const ArcticLight: ThemeColors = {
   danger: '#D92F3A',
   recovery: '#8062D9',
 };
+
+export const setupPalette = {
+  night: { ...MidnightDark, bg: '#090A12', surface: '#12151E', border: '#2B303D', textPrimary: '#F6F7FA', textSecondary: '#A7AEBD', accent: '#77B9FF' },
+  day: { ...ArcticLight, bg: '#F7F8FA', textSecondary: '#525D6D', accent: '#205FA7' },
+};
+
+export const Typography = {
+  regular: 'Poppins-Regular',
+  medium: 'Poppins-Medium',
+  semiBold: 'Poppins-SemiBold',
+  bold: 'Poppins-Bold',
+  extraBold: 'Poppins-ExtraBold',
+};
+
+export const Fonts = Typography;

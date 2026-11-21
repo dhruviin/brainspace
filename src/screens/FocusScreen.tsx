@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { View, Text, StyleSheet, ScrollView, TouchableOpacity } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
-import { ThemeColors } from '../theme/tokens';
+import { ThemeColors, Fonts } from '../theme/tokens';
 import { FocusSessionLog } from '../types';
 
 interface FocusScreenProps {
@@ -146,8 +146,8 @@ export const FocusScreen: React.FC<FocusScreenProps> = ({ theme }) => {
 const styles = StyleSheet.create({
   container: { flex: 1 },
   content: { padding: 20, paddingBottom: 60 },
-  title: { fontSize: 24, fontWeight: '800', marginTop: 10 },
-  subtitle: { fontSize: 13, marginTop: 4, marginBottom: 20 },
+  title: { fontFamily: Fonts.bold, fontSize: 24, marginTop: 10 },
+  subtitle: { fontFamily: Fonts.regular, fontSize: 13, marginTop: 4, marginBottom: 20 },
   presetsRow: {
     flexDirection: 'row',
     gap: 10,
@@ -160,7 +160,7 @@ const styles = StyleSheet.create({
     borderWidth: 1,
     alignItems: 'center',
   },
-  presetText: { fontSize: 13 },
+  presetText: { fontFamily: Fonts.medium, fontSize: 13 },
   timerCard: {
     padding: 30,
     borderRadius: 24,
@@ -168,9 +168,9 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     marginBottom: 24,
   },
-  timerMode: { fontSize: 11, fontWeight: '800', letterSpacing: 1.5, marginBottom: 8 },
-  timerDigits: { fontSize: 64, fontWeight: '900', fontVariant: ['tabular-nums'], letterSpacing: -1 },
-  timerStatus: { fontSize: 13, marginTop: 4, marginBottom: 24 },
+  timerMode: { fontFamily: Fonts.bold, fontSize: 11, letterSpacing: 1.5, marginBottom: 8 },
+  timerDigits: { fontFamily: Fonts.extraBold, fontSize: 64, fontVariant: ['tabular-nums'], letterSpacing: -1 },
+  timerStatus: { fontFamily: Fonts.medium, fontSize: 13, marginTop: 4, marginBottom: 24 },
   controlsRow: {
     flexDirection: 'row',
     gap: 12,
@@ -187,7 +187,7 @@ const styles = StyleSheet.create({
     flex: 1,
     justifyContent: 'center',
   },
-  actionBtnText: { color: '#FFFFFF', fontSize: 16, fontWeight: '700' },
+  actionBtnText: { fontFamily: Fonts.bold, color: '#FFFFFF', fontSize: 16 },
   resetButton: {
     padding: 16,
     borderRadius: 16,
@@ -195,7 +195,7 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     justifyContent: 'center',
   },
-  sectionHeading: { fontSize: 16, fontWeight: '700', marginBottom: 12 },
+  sectionHeading: { fontFamily: Fonts.bold, fontSize: 16, marginBottom: 12 },
   historyList: { gap: 10 },
   historyRow: {
     flexDirection: 'row',
@@ -213,7 +213,7 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     justifyContent: 'center',
   },
-  historyTag: { fontSize: 14, fontWeight: '600' },
-  historyTime: { fontSize: 11, marginTop: 2 },
-  historyDuration: { fontSize: 15, fontWeight: '800' },
+  historyTag: { fontFamily: Fonts.semiBold, fontSize: 14 },
+  historyTime: { fontFamily: Fonts.regular, fontSize: 11, marginTop: 2 },
+  historyDuration: { fontFamily: Fonts.bold, fontSize: 15 },
 });

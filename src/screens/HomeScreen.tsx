@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { View, Text, StyleSheet, ScrollView, TouchableOpacity } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
-import { ThemeColors } from '../theme/tokens';
+import { ThemeColors, Fonts } from '../theme/tokens';
 import { MomentumOrb } from '../components/MomentumOrb';
 import { UsageStatsService, DailyUsageReport } from '../services/UsageStatsService';
 
@@ -182,8 +182,8 @@ const styles = StyleSheet.create({
     marginBottom: 16,
     marginTop: 10,
   },
-  dateText: { fontSize: 13, textTransform: 'uppercase', letterSpacing: 0.5 },
-  greeting: { fontSize: 24, fontWeight: '800', marginTop: 2 },
+  dateText: { fontFamily: Fonts.medium, fontSize: 13, textTransform: 'uppercase', letterSpacing: 0.5 },
+  greeting: { fontFamily: Fonts.bold, fontSize: 24, marginTop: 2 },
   urgePill: {
     flexDirection: 'row',
     alignItems: 'center',
@@ -193,7 +193,7 @@ const styles = StyleSheet.create({
     borderRadius: 20,
     borderWidth: 1,
   },
-  urgePillText: { fontSize: 12, fontWeight: '700' },
+  urgePillText: { fontFamily: Fonts.bold, fontSize: 12 },
   permissionBanner: {
     flexDirection: 'row',
     alignItems: 'center',
@@ -203,8 +203,8 @@ const styles = StyleSheet.create({
     borderWidth: 1,
     marginBottom: 16,
   },
-  permissionTitle: { fontSize: 13, fontWeight: '700' },
-  permissionSub: { fontSize: 11, marginTop: 2 },
+  permissionTitle: { fontFamily: Fonts.bold, fontSize: 13 },
+  permissionSub: { fontFamily: Fonts.regular, fontSize: 11, marginTop: 2 },
   heroCard: {
     padding: 20,
     borderRadius: 20,
@@ -212,8 +212,8 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     marginBottom: 16,
   },
-  cardHeaderTitle: { fontSize: 11, fontWeight: '700', letterSpacing: 1 },
-  heroSubtext: { fontSize: 12, textAlign: 'center', marginTop: 6 },
+  cardHeaderTitle: { fontFamily: Fonts.bold, fontSize: 11, letterSpacing: 1 },
+  heroSubtext: { fontFamily: Fonts.medium, fontSize: 12, textAlign: 'center', marginTop: 6 },
   metricsRow: {
     flexDirection: 'row',
     gap: 12,
@@ -231,9 +231,9 @@ const styles = StyleSheet.create({
     gap: 6,
     marginBottom: 8,
   },
-  metricLabel: { fontSize: 12, fontWeight: '600' },
-  metricValue: { fontSize: 22, fontWeight: '800', marginBottom: 4 },
-  metricTrend: { fontSize: 11, fontWeight: '500' },
+  metricLabel: { fontFamily: Fonts.medium, fontSize: 12 },
+  metricValue: { fontFamily: Fonts.extraBold, fontSize: 22, marginBottom: 4 },
+  metricTrend: { fontFamily: Fonts.medium, fontSize: 11 },
   categoryCard: {
     padding: 18,
     borderRadius: 20,
@@ -246,7 +246,7 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     marginBottom: 12,
   },
-  linkText: { fontSize: 13, fontWeight: '600' },
+  linkText: { fontFamily: Fonts.semiBold, fontSize: 13 },
   progressBar: {
     height: 10,
     borderRadius: 5,
@@ -265,7 +265,7 @@ const styles = StyleSheet.create({
     gap: 6,
   },
   dot: { width: 8, height: 8, borderRadius: 4 },
-  legendText: { fontSize: 11 },
+  legendText: { fontFamily: Fonts.medium, fontSize: 11 },
   focusCta: {
     flexDirection: 'row',
     justifyContent: 'space-between',
@@ -279,8 +279,8 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     gap: 14,
   },
-  focusCtaTitle: { color: '#FFFFFF', fontSize: 16, fontWeight: '700' },
-  focusCtaSub: { color: 'rgba(255,255,255,0.8)', fontSize: 12, marginTop: 2 },
+  focusCtaTitle: { fontFamily: Fonts.bold, color: '#FFFFFF', fontSize: 16 },
+  focusCtaSub: { fontFamily: Fonts.regular, color: 'rgba(255,255,255,0.8)', fontSize: 12, marginTop: 2 },
   habitCard: {
     padding: 18,
     borderRadius: 20,
@@ -297,12 +297,12 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     gap: 6,
   },
-  habitTitle: { fontSize: 16, fontWeight: '700', marginBottom: 8 },
+  habitTitle: { fontFamily: Fonts.bold, fontSize: 16, marginBottom: 8 },
   habitMeta: {
     flexDirection: 'row',
     justifyContent: 'space-between',
     alignItems: 'center',
   },
-  streakCount: { fontSize: 14, fontWeight: '700' },
-  habitBest: { fontSize: 12 },
+  streakCount: { fontFamily: Fonts.bold, fontSize: 14 },
+  habitBest: { fontFamily: Fonts.regular, fontSize: 12 },
 });

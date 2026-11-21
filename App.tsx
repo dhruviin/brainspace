@@ -2,8 +2,9 @@ import React, { useCallback, useEffect, useState } from 'react';
 import { View, Text, StyleSheet, TouchableOpacity, SafeAreaView, Platform } from 'react-native';
 import { StatusBar } from 'expo-status-bar';
 import * as SplashScreen from 'expo-splash-screen';
+import { useFonts } from 'expo-font';
 import { Ionicons } from '@expo/vector-icons';
-import { MidnightDark, ArcticLight, ThemeColors } from './src/theme/tokens';
+import { MidnightDark, ArcticLight, ThemeColors, Fonts } from './src/theme/tokens';
 import { TabType } from './src/types';
 import { HomeScreen } from './src/screens/HomeScreen';
 import { InsightsScreen } from './src/screens/InsightsScreen';
@@ -14,6 +15,14 @@ import { UrgeModal } from './src/components/UrgeModal';
 import { LaunchSplash } from './src/components/LaunchSplash';
 
 export default function App() {
+  const [fontsLoaded] = useFonts({
+    'Poppins-Regular': require('./assets/fonts/Poppins-Regular.ttf'),
+    'Poppins-Medium': require('./assets/fonts/Poppins-Medium.ttf'),
+    'Poppins-SemiBold': require('./assets/fonts/Poppins-SemiBold.ttf'),
+    'Poppins-Bold': require('./assets/fonts/Poppins-Bold.ttf'),
+    'Poppins-ExtraBold': require('./assets/fonts/Poppins-ExtraBold.ttf'),
+  });
+
   const [currentTab, setCurrentTab] = useState<TabType>('home');
   const [themeMode, setThemeMode] = useState<'MidnightDark' | 'ArcticLight'>('MidnightDark');
   const [urgeModalVisible, setUrgeModalVisible] = useState(false);
@@ -81,7 +90,7 @@ export default function App() {
                     styles.tabLabel,
                     {
                       color: iconColor,
-                      fontWeight: isActive ? '700' : '500',
+                      fontFamily: isActive ? Fonts.bold : Fonts.medium,
                     },
                   ]}
                 >
@@ -132,6 +141,7 @@ const styles = StyleSheet.create({
     gap: 4,
   },
   tabLabel: {
+    fontFamily: Fonts.medium,
     fontSize: 10,
     letterSpacing: 0.2,
   },

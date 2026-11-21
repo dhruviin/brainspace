@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { View, Text, StyleSheet, ScrollView, TouchableOpacity, Alert } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
-import { ThemeColors } from '../theme/tokens';
+import { ThemeColors, Fonts } from '../theme/tokens';
 import { UsageStatsService } from '../services/UsageStatsService';
 
 interface ProfileScreenProps {
@@ -165,9 +165,9 @@ export const ProfileScreen: React.FC<ProfileScreenProps> = ({ theme, themeName, 
 const styles = StyleSheet.create({
   container: { flex: 1 },
   content: { padding: 20, paddingBottom: 60 },
-  title: { fontSize: 24, fontWeight: '800', marginTop: 10 },
-  subtitle: { fontSize: 13, marginTop: 4, marginBottom: 20 },
-  sectionTitle: { fontSize: 11, fontWeight: '800', letterSpacing: 1, marginBottom: 8, marginTop: 6 },
+  title: { fontFamily: Fonts.bold, fontSize: 24, marginTop: 10 },
+  subtitle: { fontFamily: Fonts.regular, fontSize: 13, marginTop: 4, marginBottom: 20 },
+  sectionTitle: { fontFamily: Fonts.bold, fontSize: 11, letterSpacing: 1, marginBottom: 8, marginTop: 6 },
   card: {
     borderRadius: 20,
     borderWidth: 1,
@@ -184,15 +184,15 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     gap: 12,
   },
-  rowLabel: { fontSize: 15, fontWeight: '600' },
-  rowDesc: { fontSize: 12, marginTop: 2 },
+  rowLabel: { fontFamily: Fonts.semiBold, fontSize: 15 },
+  rowDesc: { fontFamily: Fonts.regular, fontSize: 12, marginTop: 2 },
   pillBtn: {
     paddingHorizontal: 12,
     paddingVertical: 8,
     borderRadius: 12,
     borderWidth: 1,
   },
-  pillBtnText: { fontSize: 12, fontWeight: '700' },
+  pillBtnText: { fontFamily: Fonts.bold, fontSize: 12 },
   diagRow: {
     flexDirection: 'row',
     justifyContent: 'space-between',
@@ -204,8 +204,8 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     gap: 12,
   },
-  diagLabel: { fontSize: 14, fontWeight: '600' },
-  diagStatus: { fontSize: 11, marginTop: 2, fontWeight: '600' },
+  diagLabel: { fontFamily: Fonts.semiBold, fontSize: 14 },
+  diagStatus: { fontFamily: Fonts.semiBold, fontSize: 11, marginTop: 2 },
   divider: { height: 1, marginVertical: 10 },
   actionRow: {
     flexDirection: 'row',
@@ -221,6 +221,6 @@ const styles = StyleSheet.create({
     borderWidth: 1,
     marginTop: 8,
   },
-  infoTitle: { fontSize: 13, fontWeight: '700', marginBottom: 2 },
-  infoText: { fontSize: 11, lineHeight: 16 },
+  infoTitle: { fontFamily: Fonts.bold, fontSize: 13, marginBottom: 2 },
+  infoText: { fontFamily: Fonts.regular, fontSize: 11, lineHeight: 16 },
 });

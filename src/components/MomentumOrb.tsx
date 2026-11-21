@@ -1,6 +1,6 @@
 import React, { useEffect, useRef } from 'react';
 import { View, Text, StyleSheet, Animated } from 'react-native';
-import { ThemeColors } from '../theme/tokens';
+import { ThemeColors, Fonts } from '../theme/tokens';
 
 interface MomentumOrbProps {
   score: number;
@@ -84,19 +84,19 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
   },
   scoreNumber: {
+    fontFamily: Fonts.extraBold,
     fontSize: 34,
-    fontWeight: '800',
     letterSpacing: -0.5,
   },
   scoreUnit: {
+    fontFamily: Fonts.bold,
     fontSize: 9,
-    fontWeight: '700',
     letterSpacing: 1.5,
     marginTop: 2,
   },
   statusText: {
+    fontFamily: Fonts.medium,
     fontSize: 13,
-    fontWeight: '500',
     marginTop: 8,
   },
 });
