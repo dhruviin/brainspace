@@ -1,6 +1,7 @@
-import React, { useCallback, useState } from 'react';
+import React, { useCallback, useEffect, useState } from 'react';
 import { View, Text, StyleSheet, TouchableOpacity, SafeAreaView, Platform } from 'react-native';
 import { StatusBar } from 'expo-status-bar';
+import * as SplashScreen from 'expo-splash-screen';
 import { Ionicons } from '@expo/vector-icons';
 import { MidnightDark, ArcticLight, ThemeColors } from './src/theme/tokens';
 import { TabType } from './src/types';
@@ -16,8 +17,7 @@ export default function App() {
   const [currentTab, setCurrentTab] = useState<TabType>('home');
   const [themeMode, setThemeMode] = useState<'MidnightDark' | 'ArcticLight'>('MidnightDark');
   const [urgeModalVisible, setUrgeModalVisible] = useState(false);
-  const [showSplash, setShowSplash] = useState(Platform.OS === 'android' || Platform.OS === 'ios');
-  const finishSplash = useCallback(() => setShowSplash(false), []);
+  const [showSplash, setShowSplash] = useState(true);
 
   const theme: ThemeColors = themeMode === 'MidnightDark' ? MidnightDark : ArcticLight;
 
@@ -35,12 +35,7 @@ export default function App() {
 
   return (
     <View style={styles.root}>
-      <SafeAreaView
-        style={[styles.safeArea, { backgroundColor: theme.bg }]}
-        accessibilityElementsHidden={showSplash}
-        importantForAccessibility={showSplash ? 'no-hide-descendants' : 'auto'}
-        pointerEvents={showSplash ? 'none' : 'auto'}
-      >
+      <SafeAreaView style={[styles.safeArea, { backgroundColor: theme.bg }]}>
         <StatusBar style={themeMode === 'MidnightDark' ? 'light' : 'dark'} />
 
         {/* Screen Container */}
@@ -104,7 +99,7 @@ export default function App() {
           theme={theme}
         />
       </SafeAreaView>
-      {showSplash && <LaunchSplash onFinish={finishSplash} />}
+      {showSplash && <LaunchSplash onFinish={() => setShowSplash(false)} />}
     </View>
   );
 }
@@ -112,6 +107,7 @@ export default function App() {
 const styles = StyleSheet.create({
   root: {
     flex: 1,
+    backgroundColor: '#000000',
   },
   safeArea: {
     flex: 1,
