@@ -43,7 +43,6 @@ export const RecoverScreen: React.FC<RecoverScreenProps> = ({ theme, onOpenUrge 
               bestStreakDays: Math.max(h.bestStreakDays, h.currentStreakDays + 1),
             };
           } else if (type === 'tough') {
-            // Master Build Plan §0.2 rule 8: Never erase historical total progress on setback!
             return { ...h, currentStreakDays: 0 };
           }
         }
@@ -60,28 +59,29 @@ export const RecoverScreen: React.FC<RecoverScreenProps> = ({ theme, onOpenUrge 
         Local-first event ledger · Free tier includes 2 private goals with zero guilt
       </Text>
 
-      {/* Urge SOS Banner */}
+      {/* Urge SOS Banner (Spotify Green Pill / Card) */}
       <TouchableOpacity
-        style={[styles.sosBanner, { backgroundColor: theme.surface, borderColor: theme.recovery }]}
+        activeOpacity={0.88}
+        style={[styles.sosBanner, { backgroundColor: theme.surface }]}
         onPress={onOpenUrge}
       >
         <View style={styles.sosLeft}>
-          <View style={[styles.sosIconCircle, { backgroundColor: 'rgba(167, 139, 250, 0.2)' }]}>
-            <Ionicons name="heart" size={24} color={theme.recovery} />
+          <View style={[styles.sosIconCircle, { backgroundColor: 'rgba(29, 185, 84, 0.15)' }]}>
+            <Ionicons name="heart" size={22} color={theme.accent} />
           </View>
-          <View>
+          <View style={{ flex: 1 }}>
             <Text style={[styles.sosTitle, { color: theme.textPrimary }]}>Experiencing an Urge Right Now?</Text>
-            <Text style={[styles.sosSub, { color: theme.recovery }]}>Tap here for 1-click guided grounding</Text>
+            <Text style={[styles.sosSub, { color: theme.accent }]}>Tap here for 1-click guided grounding</Text>
           </View>
         </View>
-        <Ionicons name="chevron-forward" size={20} color={theme.recovery} />
+        <Ionicons name="chevron-forward" size={18} color={theme.accent} />
       </TouchableOpacity>
 
       {/* Habits List */}
       <Text style={[styles.sectionHeading, { color: theme.textPrimary }]}>Active Recovery Goals</Text>
       <View style={styles.habitsList}>
         {habits.map((habit) => (
-          <View key={habit.id} style={[styles.habitCard, { backgroundColor: theme.surface, borderColor: theme.border }]}>
+          <View key={habit.id} style={[styles.habitCard, { backgroundColor: theme.surface }]}>
             <View style={styles.cardTop}>
               <View>
                 <Text style={[styles.habitName, { color: theme.textPrimary }]}>{habit.title}</Text>
@@ -89,7 +89,7 @@ export const RecoverScreen: React.FC<RecoverScreenProps> = ({ theme, onOpenUrge 
                   Mode: {habit.category.toUpperCase()} · Encrypted locally
                 </Text>
               </View>
-              <View style={[styles.streakBadge, { backgroundColor: 'rgba(29, 155, 240, 0.15)' }]}>
+              <View style={[styles.streakBadge, { backgroundColor: 'rgba(29, 185, 84, 0.15)' }]}>
                 <Text style={[styles.streakBadgeText, { color: theme.accent }]}>🔥 {habit.currentStreakDays} Days</Text>
               </View>
             </View>
@@ -110,21 +110,21 @@ export const RecoverScreen: React.FC<RecoverScreenProps> = ({ theme, onOpenUrge 
             <Text style={[styles.checkInTitle, { color: theme.textSecondary }]}>Log Today's Reflection:</Text>
             <View style={styles.actionsRow}>
               <TouchableOpacity
-                style={[styles.checkBtn, { backgroundColor: 'rgba(0, 186, 124, 0.15)', borderColor: theme.success }]}
+                style={[styles.checkBtn, { backgroundColor: 'rgba(29, 185, 84, 0.15)' }]}
                 onPress={() => handleCheckIn(habit.id, 'good')}
               >
-                <Text style={[styles.checkBtnText, { color: theme.success }]}>👍 Held Strong</Text>
+                <Text style={[styles.checkBtnText, { color: theme.accent }]}>👍 Held Strong</Text>
               </TouchableOpacity>
 
               <TouchableOpacity
-                style={[styles.checkBtn, { backgroundColor: 'rgba(244, 33, 46, 0.12)', borderColor: theme.danger }]}
+                style={[styles.checkBtn, { backgroundColor: 'rgba(233, 20, 41, 0.15)' }]}
                 onPress={() => handleCheckIn(habit.id, 'tough')}
               >
                 <Text style={[styles.checkBtnText, { color: theme.danger }]}>Tough Moment</Text>
               </TouchableOpacity>
 
               <TouchableOpacity
-                style={[styles.checkBtn, { backgroundColor: theme.surface2, borderColor: theme.border }]}
+                style={[styles.checkBtn, { backgroundColor: theme.surface2 }]}
                 onPress={() => handleCheckIn(habit.id, 'skip')}
               >
                 <Text style={[styles.checkBtnText, { color: theme.textSecondary }]}>Skip</Text>
@@ -139,19 +139,18 @@ export const RecoverScreen: React.FC<RecoverScreenProps> = ({ theme, onOpenUrge 
 
 const styles = StyleSheet.create({
   container: { flex: 1 },
-  content: { padding: 20, paddingBottom: 150 },
-  title: { fontFamily: Fonts.bold, fontSize: 24, marginTop: 10 },
-  subtitle: { fontFamily: Fonts.regular, fontSize: 13, marginTop: 4, marginBottom: 20, lineHeight: 18 },
+  content: { padding: 18, paddingBottom: 150 },
+  title: { fontFamily: Fonts.bold, fontSize: 24, marginTop: 10, letterSpacing: -0.3 },
+  subtitle: { fontFamily: Fonts.regular, fontSize: 13, marginTop: 4, marginBottom: 18, lineHeight: 18 },
   sosBanner: {
     flexDirection: 'row',
     justifyContent: 'space-between',
     alignItems: 'center',
     padding: 16,
     borderRadius: 20,
-    borderWidth: 1.5,
-    marginBottom: 24,
+    marginBottom: 22,
   },
-  sosLeft: { flexDirection: 'row', alignItems: 'center', gap: 12 },
+  sosLeft: { flexDirection: 'row', alignItems: 'center', gap: 12, flex: 1 },
   sosIconCircle: {
     width: 44,
     height: 44,
@@ -162,24 +161,23 @@ const styles = StyleSheet.create({
   sosTitle: { fontFamily: Fonts.bold, fontSize: 14 },
   sosSub: { fontFamily: Fonts.semiBold, fontSize: 12, marginTop: 2 },
   sectionHeading: { fontFamily: Fonts.bold, fontSize: 16, marginBottom: 12 },
-  habitsList: { gap: 16 },
+  habitsList: { gap: 14 },
   habitCard: {
     padding: 18,
     borderRadius: 20,
-    borderWidth: 1,
   },
   cardTop: {
     flexDirection: 'row',
     justifyContent: 'space-between',
     alignItems: 'flex-start',
-    marginBottom: 16,
+    marginBottom: 14,
   },
   habitName: { fontFamily: Fonts.bold, fontSize: 16 },
   habitCategory: { fontFamily: Fonts.regular, fontSize: 11, marginTop: 3 },
   streakBadge: {
     paddingHorizontal: 10,
     paddingVertical: 5,
-    borderRadius: 12,
+    borderRadius: 14,
   },
   streakBadgeText: { fontFamily: Fonts.bold, fontSize: 12 },
   statsRow: {
@@ -192,15 +190,14 @@ const styles = StyleSheet.create({
     marginBottom: 14,
   },
   statBox: { flex: 1 },
-  statValue: { fontFamily: Fonts.extraBold, fontSize: 20 },
+  statValue: { fontFamily: Fonts.extraBold, fontSize: 22 },
   statLabel: { fontFamily: Fonts.medium, fontSize: 11, marginTop: 2 },
   checkInTitle: { fontFamily: Fonts.semiBold, fontSize: 12, marginBottom: 8 },
   actionsRow: { flexDirection: 'row', gap: 8 },
   checkBtn: {
     flex: 1,
     paddingVertical: 10,
-    borderRadius: 12,
-    borderWidth: 1,
+    borderRadius: 14,
     alignItems: 'center',
   },
   checkBtnText: { fontFamily: Fonts.bold, fontSize: 12 },

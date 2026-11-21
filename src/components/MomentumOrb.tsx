@@ -14,13 +14,13 @@ export const MomentumOrb: React.FC<MomentumOrbProps> = ({ score, theme }) => {
     Animated.loop(
       Animated.sequence([
         Animated.timing(pulseAnim, {
-          toValue: 1.06,
-          duration: 2200,
+          toValue: 1.04,
+          duration: 2400,
           useNativeDriver: true,
         }),
         Animated.timing(pulseAnim, {
           toValue: 1,
-          duration: 2200,
+          duration: 2400,
           useNativeDriver: true,
         }),
       ])
@@ -48,7 +48,7 @@ export const MomentumOrb: React.FC<MomentumOrbProps> = ({ score, theme }) => {
           },
         ]}
       >
-        <View style={[styles.innerCore, { backgroundColor: theme.surface }]}>
+        <View style={[styles.innerCore, { backgroundColor: theme.bg }]}>
           <Text style={[styles.scoreNumber, { color: theme.textPrimary }]}>{score}</Text>
           <Text style={[styles.scoreUnit, { color: theme.accent }]}>MOMENTUM</Text>
         </View>
@@ -62,41 +62,42 @@ const styles = StyleSheet.create({
   container: {
     alignItems: 'center',
     justifyContent: 'center',
-    marginVertical: 12,
+    marginVertical: 14,
   },
   outerRing: {
-    width: 130,
-    height: 130,
-    borderRadius: 65,
-    borderWidth: 3,
+    width: 136,
+    height: 136,
+    borderRadius: 68,
+    borderWidth: 3.5,
     alignItems: 'center',
     justifyContent: 'center',
-    elevation: 4,
+    elevation: 6,
     shadowOffset: { width: 0, height: 4 },
-    shadowOpacity: 0.25,
-    shadowRadius: 10,
+    shadowOpacity: 0.35,
+    shadowRadius: 12,
   },
   innerCore: {
-    width: 104,
-    height: 104,
-    borderRadius: 52,
+    width: 112,
+    height: 112,
+    borderRadius: 56,
     alignItems: 'center',
     justifyContent: 'center',
   },
   scoreNumber: {
     fontFamily: Fonts.extraBold,
-    fontSize: 34,
-    letterSpacing: -0.5,
+    fontSize: 40,
+    letterSpacing: -1,
   },
   scoreUnit: {
     fontFamily: Fonts.bold,
-    fontSize: 9,
-    letterSpacing: 1.5,
-    marginTop: 2,
+    fontSize: 9.5,
+    letterSpacing: 2,
+    marginTop: 1,
   },
   statusText: {
     fontFamily: Fonts.medium,
     fontSize: 13,
-    marginTop: 8,
+    marginTop: 10,
+    letterSpacing: 0.2,
   },
 });

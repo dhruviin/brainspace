@@ -26,14 +26,14 @@ export const InsightsScreen: React.FC<InsightsScreenProps> = ({ theme }) => {
   return (
     <ScrollView style={[styles.container, { backgroundColor: theme.bg }]} contentContainerStyle={styles.content}>
       <View style={styles.headerRow}>
-        <View>
+        <View style={{ flex: 1, marginRight: 10 }}>
           <Text style={[styles.title, { color: theme.textPrimary }]}>Insights & Analytics</Text>
           <Text style={[styles.subtitle, { color: theme.textSecondary }]}>
             {usage?.permissionGranted ? 'Live Android UsageStats' : 'Sample Baseline (Grant access for live stats)'}
           </Text>
         </View>
         <TouchableOpacity
-          style={[styles.refreshBtn, { backgroundColor: theme.surface2, borderColor: theme.border }]}
+          style={[styles.refreshBtn, { backgroundColor: theme.surface2 }]}
           onPress={refreshStats}
         >
           <Ionicons name="refresh" size={16} color={theme.accent} />
@@ -43,30 +43,38 @@ export const InsightsScreen: React.FC<InsightsScreenProps> = ({ theme }) => {
       {/* Permission Callout */}
       {usage && !usage.permissionGranted && (
         <TouchableOpacity
-          style={[styles.permissionBox, { backgroundColor: theme.surface2, borderColor: theme.accent }]}
+          style={[styles.permissionBox, { backgroundColor: theme.surface }]}
           onPress={() => UsageStatsService.requestPermission()}
         >
-          <Ionicons name="shield-checkmark-outline" size={18} color={theme.accent} />
+          <Ionicons name="shield-checkmark" size={18} color={theme.accent} />
           <Text style={[styles.permissionText, { color: theme.textPrimary }]}>
             Tap to Authorize Android Usage Access in System Settings
           </Text>
         </TouchableOpacity>
       )}
 
-      {/* Range Filter */}
-      <View style={[styles.filterBar, { backgroundColor: theme.surface2, borderColor: theme.border }]}>
+      {/* Spotify Signature Range Filter Pills */}
+      <View style={styles.filterBar}>
         {(['Day', 'Week', 'Month'] as const).map((r) => {
           const isSelected = timeRange === r;
           return (
             <TouchableOpacity
               key={r}
               onPress={() => setTimeRange(r)}
-              style={[styles.filterBtn, isSelected && { backgroundColor: theme.surface, borderColor: theme.border }]}
+              style={[
+                styles.filterBtn,
+                {
+                  backgroundColor: isSelected ? theme.accent : theme.surface2,
+                },
+              ]}
             >
               <Text
                 style={[
                   styles.filterText,
-                  { color: isSelected ? theme.accent : theme.textSecondary, fontWeight: isSelected ? '700' : '500' },
+                  {
+                    color: isSelected ? '#000000' : theme.textPrimary,
+                    fontFamily: isSelected ? Fonts.bold : Fonts.medium,
+                  },
                 ]}
               >
                 {r}
@@ -76,14 +84,14 @@ export const InsightsScreen: React.FC<InsightsScreenProps> = ({ theme }) => {
         })}
       </View>
 
-      {/* Reel Feed Diagnostics Card */}
-      <View style={[styles.reelCard, { backgroundColor: theme.surface, borderColor: theme.border }]}>
+      {/* Reel Feed Diagnostics Card (Slice Minimalism) */}
+      <View style={[styles.reelCard, { backgroundColor: theme.surface }]}>
         <View style={styles.reelHeader}>
           <View style={styles.reelHeaderTitle}>
-            <Ionicons name="film" size={18} color={theme.warning} />
+            <Ionicons name="film" size={17} color={theme.warning} />
             <Text style={[styles.cardTitle, { color: theme.textPrimary }]}>Estimated Short-Form Feed Count</Text>
           </View>
-          <View style={[styles.badge, { backgroundColor: 'rgba(245, 185, 66, 0.15)' }]}>
+          <View style={[styles.badge, { backgroundColor: 'rgba(255, 164, 43, 0.15)' }]}>
             <Text style={[styles.badgeText, { color: theme.warning }]}>Phase 0 Gated</Text>
           </View>
         </View>
@@ -98,19 +106,25 @@ export const InsightsScreen: React.FC<InsightsScreenProps> = ({ theme }) => {
       <Text style={[styles.sectionHeading, { color: theme.textPrimary }]}>App Usage & Classification</Text>
       <View style={styles.appList}>
         {apps.map((item) => (
-          <View key={item.packageName} style={[styles.appRow, { backgroundColor: theme.surface, borderColor: theme.border }]}>
+          <View key={item.packageName} style={[styles.appRow, { backgroundColor: theme.surface }]}>
             <View style={styles.appLeft}>
               <View style={[styles.appIconContainer, { backgroundColor: theme.surface2 }]}>
                 <Ionicons
                   name={
                     item.category === 'Productive'
-                      ? 'code-slash-outline'
+                      ? 'code-slash'
                       : item.category === 'Distracting'
-                      ? 'flame-outline'
-                      : 'apps-outline'
+                      ? 'flame'
+                      : 'apps'
                   }
-                  size={20}
-                  color={item.category === 'Productive' ? theme.success : item.category === 'Distracting' ? theme.danger : theme.textSecondary}
+                  size={19}
+                  color={
+                    item.category === 'Productive'
+                      ? theme.success
+                      : item.category === 'Distracting'
+                      ? theme.danger
+                      : theme.textSecondary
+                  }
                 />
               </View>
               <View style={{ flex: 1 }}>
@@ -130,10 +144,10 @@ export const InsightsScreen: React.FC<InsightsScreenProps> = ({ theme }) => {
                   {
                     backgroundColor:
                       item.category === 'Productive'
-                        ? 'rgba(0, 186, 124, 0.15)'
+                        ? 'rgba(29, 185, 84, 0.15)'
                         : item.category === 'Distracting'
-                        ? 'rgba(244, 33, 46, 0.15)'
-                        : 'rgba(146, 153, 163, 0.15)',
+                        ? 'rgba(233, 20, 41, 0.15)'
+                        : 'rgba(179, 179, 179, 0.15)',
                   },
                 ]}
               >
@@ -163,7 +177,7 @@ export const InsightsScreen: React.FC<InsightsScreenProps> = ({ theme }) => {
 
 const styles = StyleSheet.create({
   container: { flex: 1 },
-  content: { padding: 20, paddingBottom: 150 },
+  content: { padding: 18, paddingBottom: 150 },
   headerRow: {
     flexDirection: 'row',
     justifyContent: 'space-between',
@@ -171,42 +185,44 @@ const styles = StyleSheet.create({
     marginTop: 10,
     marginBottom: 4,
   },
-  title: { fontFamily: Fonts.bold, fontSize: 24 },
+  title: { fontFamily: Fonts.bold, fontSize: 24, letterSpacing: -0.3 },
   subtitle: { fontFamily: Fonts.regular, fontSize: 13, marginTop: 4, marginBottom: 16, lineHeight: 18 },
   refreshBtn: {
-    padding: 10,
-    borderRadius: 12,
-    borderWidth: 1,
+    width: 40,
+    height: 40,
+    borderRadius: 20,
+    alignItems: 'center',
+    justifyContent: 'center',
   },
   permissionBox: {
     flexDirection: 'row',
     alignItems: 'center',
     gap: 10,
     padding: 14,
-    borderRadius: 14,
-    borderWidth: 1,
+    borderRadius: 16,
     marginBottom: 16,
   },
-  permissionText: { fontFamily: Fonts.semiBold, fontSize: 12, flex: 1 },
+  permissionText: { fontFamily: Fonts.semiBold, fontSize: 12.5, flex: 1 },
   filterBar: {
     flexDirection: 'row',
-    borderRadius: 14,
-    borderWidth: 1,
-    padding: 4,
-    marginBottom: 20,
+    gap: 8,
+    marginBottom: 18,
   },
   filterBtn: {
     flex: 1,
-    paddingVertical: 8,
-    borderRadius: 10,
+    paddingVertical: 9,
+    borderRadius: 18,
     alignItems: 'center',
+    justifyContent: 'center',
   },
-  filterText: { fontFamily: Fonts.medium, fontSize: 13 },
+  filterText: {
+    fontSize: 12.5,
+    letterSpacing: 0.1,
+  },
   reelCard: {
-    padding: 18,
+    padding: 20,
     borderRadius: 20,
-    borderWidth: 1,
-    marginBottom: 24,
+    marginBottom: 20,
   },
   reelHeader: {
     flexDirection: 'row',
@@ -218,16 +234,26 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     alignItems: 'center',
     gap: 8,
+    flex: 1,
   },
-  cardTitle: { fontFamily: Fonts.bold, fontSize: 14 },
+  cardTitle: { fontFamily: Fonts.bold, fontSize: 13.5 },
   badge: {
     paddingHorizontal: 8,
     paddingVertical: 4,
-    borderRadius: 8,
+    borderRadius: 12,
   },
-  badgeText: { fontFamily: Fonts.bold, fontSize: 11 },
-  reelTotal: { fontFamily: Fonts.extraBold, fontSize: 28, marginBottom: 6 },
-  reelNotice: { fontFamily: Fonts.regular, fontSize: 12, lineHeight: 18 },
+  badgeText: { fontFamily: Fonts.bold, fontSize: 10 },
+  reelTotal: {
+    fontFamily: Fonts.extraBold,
+    fontSize: 26,
+    letterSpacing: -0.5,
+    marginVertical: 6,
+  },
+  reelNotice: {
+    fontFamily: Fonts.regular,
+    fontSize: 11.5,
+    lineHeight: 16,
+  },
   sectionHeading: { fontFamily: Fonts.bold, fontSize: 16, marginBottom: 12 },
   appList: { gap: 10 },
   appRow: {
@@ -235,8 +261,7 @@ const styles = StyleSheet.create({
     justifyContent: 'space-between',
     alignItems: 'center',
     padding: 14,
-    borderRadius: 16,
-    borderWidth: 1,
+    borderRadius: 18,
   },
   appLeft: {
     flexDirection: 'row',
@@ -247,18 +272,18 @@ const styles = StyleSheet.create({
   appIconContainer: {
     width: 40,
     height: 40,
-    borderRadius: 12,
+    borderRadius: 20,
     alignItems: 'center',
     justifyContent: 'center',
   },
-  appName: { fontFamily: Fonts.semiBold, fontSize: 15 },
+  appName: { fontFamily: Fonts.bold, fontSize: 14.5 },
   appMeta: { fontFamily: Fonts.regular, fontSize: 11, marginTop: 2 },
-  appRight: { alignItems: 'flex-end', gap: 4, marginLeft: 10 },
+  appRight: { alignItems: 'flex-end', gap: 4 },
   appTime: { fontFamily: Fonts.bold, fontSize: 15 },
   categoryPill: {
     paddingHorizontal: 8,
-    paddingVertical: 2,
-    borderRadius: 6,
+    paddingVertical: 3,
+    borderRadius: 10,
   },
   categoryPillText: { fontFamily: Fonts.bold, fontSize: 10 },
 });

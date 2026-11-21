@@ -14,18 +14,18 @@ export interface ThemeColors {
 }
 
 export const MidnightDark: ThemeColors = {
-  bg: '#000000',
-  surface: '#101216',
-  surface2: '#16181C',
-  surface3: '#202327',
+  bg: '#121212',
+  surface: '#181818',
+  surface2: '#242424',
+  surface3: '#2A2A2A',
   textPrimary: '#FFFFFF',
-  textSecondary: '#9299A3',
-  border: '#292D32',
-  accent: '#1D9BF0',
-  success: '#00BA7C',
-  warning: '#F5B942',
-  danger: '#F4212E',
-  recovery: '#A78BFA',
+  textSecondary: '#B3B3B3',
+  border: 'rgba(255, 255, 255, 0.06)',
+  accent: '#1DB954',
+  success: '#1DB954',
+  warning: '#FFA42B',
+  danger: '#E91429',
+  recovery: '#1DB954',
 };
 
 export const ArcticLight: ThemeColors = {
