@@ -2,40 +2,44 @@ import React, { useEffect, useRef } from 'react';
 import { Animated, Easing, Image, StyleSheet, View } from 'react-native';
 import * as SplashScreen from 'expo-splash-screen';
 
-const DURATION_MS = 2100;
+const DURATION_MS = 2200;
+const MARK_SIZE = 64;
 const MIDNIGHT = '#090A12';
+const WORD_SCALE = 0.24;
+const WORD_WIDTH = 716 * WORD_SCALE;
+const WORD_HEIGHT = 142 * WORD_SCALE;
+const SUFFIX_WIDTH = (716 - 90) * WORD_SCALE;
+const STAGE_WIDTH = 384;
+const STAGE_HEIGHT = 80;
+const SETTLED = 0.75;
+const unfoldEase = Easing.bezier(0.48, 0.04, 0.16, 1);
+const fadeEase = Easing.inOut(Easing.sin);
 
-// The wordmark is 716 × 142.
-// 'B' (with natural kerning gap) is 90 × 142.
-// 'rainSpace' is 626 × 142.
-const SCALE = 0.28;
-const H_BASE = 142 * SCALE; // ~39.8 px
-const W_B = 90 * SCALE;     // ~25.2 px
-const W_SUFFIX = 626 * SCALE; // ~175.3 px
-
-// Initial scale for 'B' to match the 64px native OS splash icon (glyph is ~104px tall)
-const INITIAL_B_SCALE = 2.0;
+function launchEasing(t: number) {
+  const ms = t * DURATION_MS;
+  if (ms < 1400) return SETTLED * unfoldEase(ms / 1400);
+  if (ms < 1800) return SETTLED;
+  return SETTLED + (1 - SETTLED) * fadeEase((ms - 1800) / (DURATION_MS - 1800));
+}
 
 export function LaunchSplash({ onFinish }: { onFinish: () => void }) {
-  // progress goes 0 -> 1
-  // 0.0 - 0.65 (0 - 1365ms): Unfold animation: B scales down, moves left, rainSpace emerges from right edge
-  // 0.65 - 0.85 (1365 - 1785ms): Hold settled state (BrainSpace fully formed)
-  // 0.85 - 1.0 (1785 - 2100ms): Smooth fade out into main app
   const progress = useRef(new Animated.Value(0)).current;
 
   useEffect(() => {
-    // Release native OS splash immediately so this animated component takes over seamlessly
+    // Hide the native OS splash window immediately so this animated component takes over
     void SplashScreen.hideAsync().catch(() => undefined);
 
+    // Hard fallback safety timer ensuring splash always dismisses smoothly
     const safetyTimer = setTimeout(() => {
       onFinish();
-    }, DURATION_MS + 300);
+    }, DURATION_MS + 400);
 
     const animation = Animated.timing(progress, {
       toValue: 1,
       duration: DURATION_MS,
-      easing: Easing.bezier(0.25, 0.1, 0.25, 1),
-      useNativeDriver: false, // width animation requires false, opacity/transform can also run smoothly
+      easing: launchEasing,
+      useNativeDriver: true,
+      isInteraction: false,
     });
 
     animation.start(({ finished }) => {
@@ -51,76 +55,53 @@ export function LaunchSplash({ onFinish }: { onFinish: () => void }) {
     };
   }, [onFinish, progress]);
 
-  // Scale of B: starts at INITIAL_B_SCALE (big logo icon) and settles down to 1.0 (letter size)
-  const bScale = progress.interpolate({
-    inputRange: [0, 0.65, 1],
-    outputRange: [INITIAL_B_SCALE, 1.0, 1.0],
+  const closed = progress.interpolate({
+    inputRange: [0, SETTLED],
+    outputRange: [1, 0],
     extrapolate: 'clamp',
   });
-
-  // Width of rainSpace: expands from 0 to full width as B settles
-  const suffixWidth = progress.interpolate({
-    inputRange: [0, 0.15, 0.65, 1],
-    outputRange: [0, 10, W_SUFFIX, W_SUFFIX],
-    extrapolate: 'clamp',
+  const size = Animated.multiply(closed, closed);
+  const markScale = size.interpolate({ inputRange: [0, 1], outputRange: [0.4, 1] });
+  const markY = size.interpolate({ inputRange: [0, 1], outputRange: [-3.8, 0] });
+  const suffixX = size.interpolate({ inputRange: [0, 1], outputRange: [14.7, 32.2] });
+  const suffixY = size.interpolate({ inputRange: [0, 1], outputRange: [0, 22.4] });
+  const groupX = closed.interpolate({ inputRange: [0, 1], outputRange: [-78.2, 0] });
+  const maskX = closed.interpolate({
+    inputRange: [0, 1],
+    outputRange: [SUFFIX_WIDTH + 10, -10],
   });
-
-  // Opacity of rainSpace
-  const suffixOpacity = progress.interpolate({
-    inputRange: [0, 0.15, 0.5, 1],
-    outputRange: [0, 0.2, 1, 1],
-    extrapolate: 'clamp',
-  });
-
-  // Entire splash fade out at the end
-  const screenOpacity = progress.interpolate({
-    inputRange: [0, 0.82, 1],
-    outputRange: [1, 1, 0],
+  const exitOpacity = progress.interpolate({
+    inputRange: [SETTLED, 1],
+    outputRange: [1, 0],
     extrapolate: 'clamp',
   });
 
   return (
     <Animated.View
-      style={[styles.splash, { opacity: screenOpacity }]}
+      style={[styles.splash, { opacity: exitOpacity }]}
       pointerEvents="none"
     >
-      <View style={styles.centerStage}>
-        {/* Unified row: Flexbox naturally shifts B left as suffix expands right, keeping word centered */}
-        <View style={styles.wordmarkRow}>
-          {/* Logo B (The ONLY B) */}
+      <Animated.View style={[styles.stage, { transform: [{ translateX: groupX }] }]}>
+        <Animated.View
+          style={[
+            styles.suffixClip,
+            { transform: [{ translateX: suffixX }, { translateY: suffixY }] },
+          ]}
+        >
+          <Image
+            source={require('../../assets/splash-wordmark.png')}
+            style={styles.word}
+            resizeMode="stretch"
+          />
           <Animated.View
-            style={[
-              styles.bBox,
-              {
-                transform: [{ scale: bScale }],
-              },
-            ]}
-          >
-            <Image
-              source={require('../../assets/splash-b.png')}
-              style={styles.bImage}
-              resizeMode="stretch"
-            />
-          </Animated.View>
-
-          {/* Suffix: ONLY 'rainSpace' emerges from right edge of B on same baseline */}
-          <Animated.View
-            style={[
-              styles.suffixClip,
-              {
-                width: suffixWidth,
-                opacity: suffixOpacity,
-              },
-            ]}
-          >
-            <Image
-              source={require('../../assets/splash-rainspace.png')}
-              style={styles.suffixImage}
-              resizeMode="stretch"
-            />
-          </Animated.View>
-        </View>
-      </View>
+            style={[styles.matte, { transform: [{ translateX: maskX }] }]}
+          />
+        </Animated.View>
+        <Animated.Image
+          source={require('../../assets/splash-icon.png')}
+          style={[styles.mark, { transform: [{ translateY: markY }, { scale: markScale }] }]}
+        />
+      </Animated.View>
     </Animated.View>
   );
 }
@@ -140,35 +121,36 @@ const styles = StyleSheet.create({
     zIndex: 999999,
     elevation: 999999,
   },
-  centerStage: {
+  stage: {
+    width: STAGE_WIDTH,
+    height: STAGE_HEIGHT,
     alignItems: 'center',
     justifyContent: 'center',
-    height: 120,
-    width: '100%',
   },
-  wordmarkRow: {
-    flexDirection: 'row',
-    alignItems: 'flex-end', // Aligns both B and rainSpace on the exact baseline
-    justifyContent: 'center',
-    height: H_BASE,
-  },
-  bBox: {
-    width: W_B,
-    height: H_BASE,
-    justifyContent: 'flex-end',
-    alignItems: 'center',
-  },
-  bImage: {
-    width: W_B,
-    height: H_BASE,
+  mark: {
+    width: MARK_SIZE,
+    height: MARK_SIZE,
   },
   suffixClip: {
-    height: H_BASE,
+    position: 'absolute',
+    left: STAGE_WIDTH / 2,
+    top: (STAGE_HEIGHT - WORD_HEIGHT) / 2,
+    width: SUFFIX_WIDTH,
+    height: WORD_HEIGHT,
     overflow: 'hidden',
-    justifyContent: 'flex-end',
   },
-  suffixImage: {
-    width: W_SUFFIX,
-    height: H_BASE,
+  word: {
+    position: 'absolute',
+    right: 0,
+    width: WORD_WIDTH,
+    height: WORD_HEIGHT,
+  },
+  matte: {
+    position: 'absolute',
+    left: 0,
+    top: -2,
+    bottom: -2,
+    width: SUFFIX_WIDTH + 20,
+    backgroundColor: MIDNIGHT,
   },
 });
