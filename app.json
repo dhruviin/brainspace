@@ -1,0 +1,44 @@
+{
+  "expo": {
+    "name": "BrainSpace",
+    "slug": "brainspace",
+    "version": "1.0.0",
+    "orientation": "portrait",
+    "icon": "./assets/icon.png",
+    "userInterfaceStyle": "dark",
+    "ios": {
+      "supportsTablet": true,
+      "bundleIdentifier": "com.brainspace.app"
+    },
+    "android": {
+      "package": "com.brainspace.app",
+      "adaptiveIcon": {
+        "backgroundColor": "#090A12",
+        "foregroundImage": "./assets/android-icon-foreground.png",
+        "backgroundImage": "./assets/android-icon-background.png",
+        "monochromeImage": "./assets/android-icon-monochrome.png"
+      },
+      "predictiveBackGestureEnabled": false
+    },
+    "web": {
+      "favicon": "./assets/favicon.png"
+    },
+    "plugins": [
+      [
+        "expo-splash-screen",
+        {
+          "backgroundColor": "#090A12",
+          "image": "./assets/splash-icon.png",
+          "imageWidth": 64,
+          "resizeMode": "contain"
+        }
+      ],
+      [
+        "expo-status-bar",
+        {
+          "style": "light"
+        }
+      ]
+    ]
+  }
+}
