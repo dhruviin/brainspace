@@ -8,6 +8,7 @@ import {
   Animated,
 } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
+import { LinearGradient } from 'expo-linear-gradient';
 import { Fonts, ThemeColors } from '../theme/tokens';
 import { TabType } from '../types';
 
@@ -36,7 +37,7 @@ const SPOTIFY_TABS: TabItemDef[] = [
 const SPOTIFY_INACTIVE = '#B3B3B3';
 const SPOTIFY_ACTIVE = '#FFFFFF';
 const SPOTIFY_MINI_BG = '#282828';
-const SPOTIFY_ACCENT = '#1DB954'; // Spotify green for now-playing indicator
+const SPOTIFY_ACCENT = '#1DB954';
 
 export const SpotifyTabBar: React.FC<SpotifyTabBarProps> = ({
   currentTab,
@@ -47,17 +48,19 @@ export const SpotifyTabBar: React.FC<SpotifyTabBarProps> = ({
 
   return (
     <View style={styles.outerContainer} pointerEvents="box-none">
-      {/* Background Gradient Fade (simulates Spotify's bottom backdrop) */}
-      <View style={styles.gradientBackdrop} pointerEvents="none">
-        <View style={[styles.gradientSlice, { opacity: 0.05 }]} />
-        <View style={[styles.gradientSlice, { opacity: 0.15 }]} />
-        <View style={[styles.gradientSlice, { opacity: 0.3 }]} />
-        <View style={[styles.gradientSlice, { opacity: 0.5 }]} />
-        <View style={[styles.gradientSlice, { opacity: 0.72 }]} />
-        <View style={[styles.gradientSlice, { opacity: 0.88 }]} />
-        <View style={[styles.gradientSlice, { opacity: 0.98 }]} />
-        <View style={[styles.gradientSlice, { opacity: 1.0, flex: 3 }]} />
-      </View>
+      {/* 100% Spotify Translucent Gradient Backdrop (NO solid background) */}
+      <LinearGradient
+        colors={[
+          'rgba(0, 0, 0, 0)',
+          'rgba(0, 0, 0, 0.35)',
+          'rgba(0, 0, 0, 0.65)',
+          'rgba(0, 0, 0, 0.85)',
+          'rgba(0, 0, 0, 0.92)',
+        ]}
+        locations={[0, 0.25, 0.55, 0.8, 1.0]}
+        style={styles.gradientBackdrop}
+        pointerEvents="none"
+      />
 
       {/* Floating Spotify Mini-Player Bar */}
       <TouchableOpacity
@@ -122,7 +125,7 @@ export const SpotifyTabBar: React.FC<SpotifyTabBarProps> = ({
         </View>
       </TouchableOpacity>
 
-      {/* Spotify 5-Tab Navigation Bar */}
+      {/* Spotify 5-Tab Navigation Bar with NO solid background */}
       <View style={styles.tabsContainer} accessibilityRole="tablist">
         <View style={styles.tabsRow}>
           {SPOTIFY_TABS.map((tab) => {
@@ -218,14 +221,11 @@ const styles = StyleSheet.create({
     zIndex: 9999,
   },
   gradientBackdrop: {
-    ...StyleSheet.absoluteFill,
-    top: -24,
-    flexDirection: 'column',
-  },
-  gradientSlice: {
-    width: '100%',
-    flex: 1,
-    backgroundColor: '#000000',
+    position: 'absolute',
+    top: -36,
+    left: 0,
+    right: 0,
+    bottom: 0,
   },
   miniPlayerContainer: {
     height: 56,
@@ -299,7 +299,7 @@ const styles = StyleSheet.create({
     borderRadius: 1,
   },
   tabsContainer: {
-    backgroundColor: '#000000',
+    backgroundColor: 'transparent',
     paddingBottom: Platform.OS === 'ios' ? 24 : 8,
   },
   tabsRow: {
@@ -308,6 +308,7 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     justifyContent: 'space-around',
     paddingHorizontal: 4,
+    backgroundColor: 'transparent',
   },
   tabButton: {
     flex: 1,
