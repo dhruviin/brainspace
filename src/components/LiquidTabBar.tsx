@@ -12,20 +12,17 @@ import { Ionicons } from '@expo/vector-icons';
 import { ThemeColors, Fonts } from '../theme/tokens';
 import { TabType } from '../types';
 
-const { width: SCREEN_WIDTH } = Dimensions.get('window');
-const HORIZONTAL_PADDING = 16;
-const PROFILE_SIZE = 54;
-const TAB_HEIGHT = 64;
-const GAP_BETWEEN = 12;
+export type TabBarStyleVariant = 'capsule' | 'center-prominent' | 'refined-split';
 
-// Main pill holds 4 tabs, profile island floats independently on the right
-const MAIN_BAR_WIDTH = SCREEN_WIDTH - (HORIZONTAL_PADDING * 2) - PROFILE_SIZE - GAP_BETWEEN;
-const TAB_WIDTH = MAIN_BAR_WIDTH / 4;
+const { width: SCREEN_WIDTH } = Dimensions.get('window');
+const HORIZONTAL_MARGIN = 16;
+const TOTAL_BAR_WIDTH = SCREEN_WIDTH - (HORIZONTAL_MARGIN * 2);
 
 interface LiquidTabBarProps {
   currentTab: TabType;
   onSelectTab: (tab: TabType) => void;
   theme: ThemeColors;
+  variant?: TabBarStyleVariant;
 }
 
 interface TabDef {
@@ -35,130 +32,104 @@ interface TabDef {
   inactiveIcon: keyof typeof Ionicons.glyphMap;
 }
 
-const MAIN_TABS: TabDef[] = [
+const ALL_TABS: TabDef[] = [
   { key: 'home', label: 'Home', activeIcon: 'compass', inactiveIcon: 'compass-outline' },
   { key: 'insights', label: 'Insights', activeIcon: 'bar-chart', inactiveIcon: 'bar-chart-outline' },
   { key: 'focus', label: 'Focus', activeIcon: 'timer', inactiveIcon: 'timer-outline' },
   { key: 'recover', label: 'Recover', activeIcon: 'heart', inactiveIcon: 'heart-outline' },
+  { key: 'profile', label: 'Profile', activeIcon: 'person', inactiveIcon: 'person-outline' },
 ];
 
 export const LiquidTabBar: React.FC<LiquidTabBarProps> = ({
   currentTab,
   onSelectTab,
   theme,
+  variant = 'capsule',
 }) => {
-  const activeIndex = currentTab === 'profile'
-    ? -1
-    : MAIN_TABS.findIndex((t) => t.key === currentTab);
+  if (variant === 'center-prominent') {
+    return (
+      <CenterProminentBar
+        currentTab={currentTab}
+        onSelectTab={onSelectTab}
+        theme={theme}
+      />
+    );
+  }
 
-  // Animated values for sliding liquid blob
-  const translateX = useRef(new Animated.Value(Math.max(0, activeIndex) * TAB_WIDTH)).current;
+  if (variant === 'refined-split') {
+    return (
+      <RefinedSplitBar
+        currentTab={currentTab}
+        onSelectTab={onSelectTab}
+        theme={theme}
+      />
+    );
+  }
+
+  // Default: Unified Glass Capsule (Option 1)
+  return (
+    <UnifiedCapsuleBar
+      currentTab={currentTab}
+      onSelectTab={onSelectTab}
+      theme={theme}
+    />
+  );
+};
+
+/* =========================================================================
+   OPTION 1: UNIFIED GLASS CAPSULE (Continuous 5-tab floating dock)
+   ========================================================================= */
+const UnifiedCapsuleBar: React.FC<Omit<LiquidTabBarProps, 'variant'>> = ({
+  currentTab,
+  onSelectTab,
+  theme,
+}) => {
+  const TAB_WIDTH = TOTAL_BAR_WIDTH / 5;
+  const activeIndex = ALL_TABS.findIndex((t) => t.key === currentTab);
+
+  const translateX = useRef(new Animated.Value(activeIndex * TAB_WIDTH)).current;
   const scaleX = useRef(new Animated.Value(1)).current;
-  const blobOpacity = useRef(new Animated.Value(activeIndex >= 0 ? 1 : 0)).current;
   const prevIndex = useRef(activeIndex);
 
-  // Profile island pulse and highlight animations
-  const profilePulse = useRef(new Animated.Value(1)).current;
-  const profileScale = useRef(new Animated.Value(currentTab === 'profile' ? 1.08 : 1)).current;
-  const profileBorderAlpha = useRef(new Animated.Value(currentTab === 'profile' ? 1 : 0.25)).current;
-
-  // Idle gentle breathing pulse for profile island
   useEffect(() => {
-    const pulseAnim = Animated.loop(
-      Animated.sequence([
-        Animated.timing(profilePulse, {
-          toValue: 1.03,
-          duration: 1600,
-          useNativeDriver: true,
-        }),
-        Animated.timing(profilePulse, {
-          toValue: 1,
-          duration: 1600,
-          useNativeDriver: true,
-        }),
-      ])
-    );
-    pulseAnim.start();
-    return () => pulseAnim.stop();
-  }, [profilePulse]);
-
-  // Handle active tab transitions (spring translation + squish/stretch)
-  useEffect(() => {
-    if (activeIndex >= 0) {
-      const diff = Math.abs(activeIndex - prevIndex.current);
-      if (diff > 0 && prevIndex.current >= 0) {
-        // Morph / squish effect as it slides
-        scaleX.setValue(1.22);
-        Animated.spring(scaleX, {
-          toValue: 1,
-          friction: 6,
-          tension: 180,
-          useNativeDriver: true,
-        }).start();
-      }
-
-      Animated.parallel([
-        Animated.spring(translateX, {
-          toValue: activeIndex * TAB_WIDTH,
-          friction: 8,
-          tension: 160,
-          useNativeDriver: true,
-        }),
-        Animated.timing(blobOpacity, {
-          toValue: 1,
-          duration: 200,
-          useNativeDriver: true,
-        }),
-      ]).start();
-    } else {
-      // Fade out blob when profile island is active
-      Animated.timing(blobOpacity, {
-        toValue: 0,
-        duration: 200,
+    const diff = Math.abs(activeIndex - prevIndex.current);
+    if (diff > 0) {
+      scaleX.setValue(1.18);
+      Animated.spring(scaleX, {
+        toValue: 1,
+        friction: 6,
+        tension: 180,
         useNativeDriver: true,
       }).start();
     }
 
-    prevIndex.current = activeIndex;
-  }, [activeIndex, translateX, scaleX, blobOpacity]);
+    Animated.spring(translateX, {
+      toValue: activeIndex * TAB_WIDTH,
+      friction: 8,
+      tension: 170,
+      useNativeDriver: true,
+    }).start();
 
-  // Profile island active transition
-  useEffect(() => {
-    const isProfile = currentTab === 'profile';
-    Animated.parallel([
-      Animated.spring(profileScale, {
-        toValue: isProfile ? 1.08 : 1,
-        friction: 7,
-        tension: 180,
-        useNativeDriver: true,
-      }),
-      Animated.timing(profileBorderAlpha, {
-        toValue: isProfile ? 1 : 0.25,
-        duration: 200,
-        useNativeDriver: true,
-      }),
-    ]).start();
-  }, [currentTab, profileScale, profileBorderAlpha]);
+    prevIndex.current = activeIndex;
+  }, [activeIndex, TAB_WIDTH, translateX, scaleX]);
 
   return (
-    <View style={styles.outerContainer} pointerEvents="box-none">
-      {/* Main Bar Pill */}
+    <View style={capsuleStyles.outer} pointerEvents="box-none">
       <View
         style={[
-          styles.mainBar,
+          capsuleStyles.dock,
           {
-            backgroundColor: theme.surface === '#000000' ? '#121418' : theme.surface,
+            backgroundColor: theme.surface === '#000000' ? '#111317' : theme.surface,
             borderColor: theme.border,
           },
         ]}
       >
-        {/* Animated Sliding Pill / Blob */}
+        {/* Sliding Active Pill */}
         <Animated.View
           style={[
-            styles.activeBlob,
+            capsuleStyles.activePillContainer,
             {
               width: TAB_WIDTH,
-              opacity: blobOpacity,
               transform: [{ translateX }, { scaleX }],
             },
           ]}
@@ -166,21 +137,31 @@ export const LiquidTabBar: React.FC<LiquidTabBarProps> = ({
         >
           <View
             style={[
-              styles.pillInner,
+              capsuleStyles.activePillInner,
               {
                 backgroundColor: theme.surface2,
                 borderColor: theme.border,
               },
             ]}
-          />
+          >
+            <View
+              style={[
+                capsuleStyles.topIndicatorLine,
+                {
+                  backgroundColor:
+                    currentTab === 'recover' ? theme.recovery : theme.accent,
+                },
+              ]}
+            />
+          </View>
         </Animated.View>
 
-        {/* 4 Main Tabs */}
-        <View style={styles.tabContent} accessibilityRole="tablist">
-          {MAIN_TABS.map((tab) => {
+        {/* 5 Tabs */}
+        <View style={capsuleStyles.tabsRow} accessibilityRole="tablist">
+          {ALL_TABS.map((tab) => {
             const isFocused = currentTab === tab.key;
             return (
-              <TabItem
+              <CapsuleTabItem
                 key={tab.key}
                 tab={tab}
                 isFocused={isFocused}
@@ -192,64 +173,19 @@ export const LiquidTabBar: React.FC<LiquidTabBarProps> = ({
           })}
         </View>
       </View>
-
-      {/* Floating Profile Island on the Right */}
-      <TouchableOpacity
-        activeOpacity={0.85}
-        onPress={() => onSelectTab('profile')}
-        accessibilityRole="tab"
-        accessibilityLabel="Profile"
-        accessibilityState={{ selected: currentTab === 'profile' }}
-        style={styles.profileWrapper}
-      >
-        <Animated.View
-          style={[
-            styles.profileCircle,
-            {
-              backgroundColor: theme.surface === '#000000' ? '#121418' : theme.surface,
-              borderColor: currentTab === 'profile' ? theme.accent : theme.border,
-              borderWidth: currentTab === 'profile' ? 2 : 1,
-              transform: [
-                {
-                  scale: currentTab === 'profile'
-                    ? profileScale
-                    : Animated.multiply(profileScale, profilePulse),
-                },
-              ],
-            },
-          ]}
-        >
-          <Ionicons
-            name={currentTab === 'profile' ? 'person' : 'person-outline'}
-            size={22}
-            color={currentTab === 'profile' ? theme.accent : theme.textSecondary}
-          />
-        </Animated.View>
-      </TouchableOpacity>
     </View>
   );
 };
 
-// Animated Tab Item with icon bounce and smooth label fade
-interface TabItemProps {
+const CapsuleTabItem: React.FC<{
   tab: TabDef;
   isFocused: boolean;
   tabWidth: number;
   theme: ThemeColors;
   onPress: () => void;
-}
-
-const TabItem: React.FC<TabItemProps> = ({
-  tab,
-  isFocused,
-  tabWidth,
-  theme,
-  onPress,
-}) => {
+}> = ({ tab, isFocused, tabWidth, theme, onPress }) => {
   const scaleAnim = useRef(new Animated.Value(isFocused ? 1.12 : 1)).current;
-  const translateY = useRef(new Animated.Value(isFocused ? -3 : 0)).current;
-  const labelOpacity = useRef(new Animated.Value(isFocused ? 1 : 0.65)).current;
-  const labelTranslateY = useRef(new Animated.Value(isFocused ? -1 : 0)).current;
+  const translateY = useRef(new Animated.Value(isFocused ? -2 : 0)).current;
 
   useEffect(() => {
     Animated.parallel([
@@ -260,83 +196,335 @@ const TabItem: React.FC<TabItemProps> = ({
         useNativeDriver: true,
       }),
       Animated.spring(translateY, {
-        toValue: isFocused ? -3 : 0,
-        friction: 7,
-        tension: 180,
-        useNativeDriver: true,
-      }),
-      Animated.timing(labelOpacity, {
-        toValue: isFocused ? 1 : 0.65,
-        duration: 180,
-        useNativeDriver: true,
-      }),
-      Animated.spring(labelTranslateY, {
-        toValue: isFocused ? -1 : 0,
+        toValue: isFocused ? -2 : 0,
         friction: 7,
         tension: 180,
         useNativeDriver: true,
       }),
     ]).start();
-  }, [isFocused, scaleAnim, translateY, labelOpacity, labelTranslateY]);
+  }, [isFocused, scaleAnim, translateY]);
 
   const activeColor = tab.key === 'recover' ? theme.recovery : theme.accent;
   const color = isFocused ? activeColor : theme.textSecondary;
 
   return (
     <TouchableOpacity
-      activeOpacity={0.8}
+      activeOpacity={0.75}
       onPress={onPress}
-      style={[styles.tabItem, { width: tabWidth }]}
+      style={[capsuleStyles.tabBtn, { width: tabWidth }]}
       accessibilityRole="tab"
       accessibilityLabel={tab.label}
       accessibilityState={{ selected: isFocused }}
     >
-      <View style={styles.iconContainer}>
-        <Animated.View
-          style={{
-            transform: [{ scale: scaleAnim }, { translateY }],
-          }}
-        >
-          <Ionicons
-            name={isFocused ? tab.activeIcon : tab.inactiveIcon}
-            size={20}
-            color={color}
-          />
-        </Animated.View>
-        <Animated.Text
+      <Animated.View style={{ transform: [{ scale: scaleAnim }, { translateY }], alignItems: 'center' }}>
+        <Ionicons
+          name={isFocused ? tab.activeIcon : tab.inactiveIcon}
+          size={20}
+          color={color}
+        />
+        <Text
           numberOfLines={1}
           style={[
-            styles.tabLabel,
+            capsuleStyles.label,
             {
               color,
-              opacity: labelOpacity,
-              transform: [{ translateY: labelTranslateY }],
+              fontFamily: isFocused ? Fonts.semiBold : Fonts.medium,
+              opacity: isFocused ? 1 : 0.65,
             },
           ]}
         >
           {tab.label}
-        </Animated.Text>
-      </View>
+        </Text>
+      </Animated.View>
     </TouchableOpacity>
   );
 };
 
-const styles = StyleSheet.create({
-  outerContainer: {
+/* =========================================================================
+   OPTION 2: CENTER-PROMINENT FOCUS DOCK (Elevated Quick Action Orb)
+   ========================================================================= */
+const CenterProminentBar: React.FC<Omit<LiquidTabBarProps, 'variant'>> = ({
+  currentTab,
+  onSelectTab,
+  theme,
+}) => {
+  const LEFT_RIGHT_WIDTH = (TOTAL_BAR_WIDTH - 64) / 4;
+  const isFocus = currentTab === 'focus';
+  const pulseAnim = useRef(new Animated.Value(1)).current;
+
+  useEffect(() => {
+    const pulse = Animated.loop(
+      Animated.sequence([
+        Animated.timing(pulseAnim, {
+          toValue: 1.05,
+          duration: 1800,
+          useNativeDriver: true,
+        }),
+        Animated.timing(pulseAnim, {
+          toValue: 1,
+          duration: 1800,
+          useNativeDriver: true,
+        }),
+      ])
+    );
+    pulse.start();
+    return () => pulse.stop();
+  }, [pulseAnim]);
+
+  return (
+    <View style={prominentStyles.outer} pointerEvents="box-none">
+      <View
+        style={[
+          prominentStyles.dock,
+          {
+            backgroundColor: theme.surface === '#000000' ? '#111317' : theme.surface,
+            borderColor: theme.border,
+          },
+        ]}
+      >
+        {/* Left Pair: Home & Insights */}
+        {ALL_TABS.slice(0, 2).map((tab) => {
+          const isFocused = currentTab === tab.key;
+          const color = isFocused ? theme.accent : theme.textSecondary;
+          return (
+            <TouchableOpacity
+              key={tab.key}
+              onPress={() => onSelectTab(tab.key)}
+              style={[prominentStyles.tabBtn, { width: LEFT_RIGHT_WIDTH }]}
+              activeOpacity={0.75}
+            >
+              <Ionicons
+                name={isFocused ? tab.activeIcon : tab.inactiveIcon}
+                size={20}
+                color={color}
+              />
+              <Text style={[prominentStyles.label, { color, fontFamily: isFocused ? Fonts.semiBold : Fonts.medium }]}>
+                {tab.label}
+              </Text>
+              {isFocused && <View style={[prominentStyles.activeDot, { backgroundColor: theme.accent }]} />}
+            </TouchableOpacity>
+          );
+        })}
+
+        {/* Center: Elevated Focus Orb */}
+        <View style={prominentStyles.centerSlot}>
+          <TouchableOpacity
+            activeOpacity={0.85}
+            onPress={() => onSelectTab('focus')}
+            accessibilityRole="tab"
+            accessibilityLabel="Start Focus"
+          >
+            <Animated.View
+              style={[
+                prominentStyles.centerOrb,
+                {
+                  backgroundColor: isFocus ? theme.accent : theme.surface2,
+                  borderColor: isFocus ? '#FFFFFF' : theme.accent,
+                  transform: [{ scale: isFocus ? 1.08 : pulseAnim }],
+                  shadowColor: theme.accent,
+                },
+              ]}
+            >
+              <Ionicons
+                name={isFocus ? 'timer' : 'timer-outline'}
+                size={26}
+                color={isFocus ? '#FFFFFF' : theme.accent}
+              />
+            </Animated.View>
+          </TouchableOpacity>
+          <Text
+            style={[
+              prominentStyles.centerLabel,
+              {
+                color: isFocus ? theme.accent : theme.textSecondary,
+                fontFamily: isFocus ? Fonts.bold : Fonts.medium,
+              },
+            ]}
+          >
+            Focus
+          </Text>
+        </View>
+
+        {/* Right Pair: Recover & Profile */}
+        {ALL_TABS.slice(3, 5).map((tab) => {
+          const isFocused = currentTab === tab.key;
+          const color = isFocused
+            ? tab.key === 'recover' ? theme.recovery : theme.accent
+            : theme.textSecondary;
+          return (
+            <TouchableOpacity
+              key={tab.key}
+              onPress={() => onSelectTab(tab.key)}
+              style={[prominentStyles.tabBtn, { width: LEFT_RIGHT_WIDTH }]}
+              activeOpacity={0.75}
+            >
+              <Ionicons
+                name={isFocused ? tab.activeIcon : tab.inactiveIcon}
+                size={20}
+                color={color}
+              />
+              <Text style={[prominentStyles.label, { color, fontFamily: isFocused ? Fonts.semiBold : Fonts.medium }]}>
+                {tab.label}
+              </Text>
+              {isFocused && (
+                <View
+                  style={[
+                    prominentStyles.activeDot,
+                    { backgroundColor: tab.key === 'recover' ? theme.recovery : theme.accent },
+                  ]}
+                />
+              )}
+            </TouchableOpacity>
+          );
+        })}
+      </View>
+    </View>
+  );
+};
+
+/* =========================================================================
+   OPTION 3: REFINED MINIMALIST SPLIT DOCK (Squircle Island + Micro-Pill)
+   ========================================================================= */
+const RefinedSplitBar: React.FC<Omit<LiquidTabBarProps, 'variant'>> = ({
+  currentTab,
+  onSelectTab,
+  theme,
+}) => {
+  const PROFILE_SIZE = 52;
+  const GAP = 10;
+  const MAIN_WIDTH = TOTAL_BAR_WIDTH - PROFILE_SIZE - GAP;
+  const TAB_WIDTH = MAIN_WIDTH / 4;
+  const activeIndex = currentTab === 'profile' ? -1 : ALL_TABS.slice(0, 4).findIndex((t) => t.key === currentTab);
+
+  const translateX = useRef(new Animated.Value(Math.max(0, activeIndex) * TAB_WIDTH)).current;
+  const blobOpacity = useRef(new Animated.Value(activeIndex >= 0 ? 1 : 0)).current;
+
+  useEffect(() => {
+    if (activeIndex >= 0) {
+      Animated.parallel([
+        Animated.spring(translateX, {
+          toValue: activeIndex * TAB_WIDTH,
+          friction: 8,
+          tension: 180,
+          useNativeDriver: true,
+        }),
+        Animated.timing(blobOpacity, {
+          toValue: 1,
+          duration: 150,
+          useNativeDriver: true,
+        }),
+      ]).start();
+    } else {
+      Animated.timing(blobOpacity, {
+        toValue: 0,
+        duration: 150,
+        useNativeDriver: true,
+      }).start();
+    }
+  }, [activeIndex, TAB_WIDTH, translateX, blobOpacity]);
+
+  const isProfile = currentTab === 'profile';
+
+  return (
+    <View style={splitStyles.outer} pointerEvents="box-none">
+      {/* 4-Tab Main Bar with refined micro-pill */}
+      <View
+        style={[
+          splitStyles.mainBar,
+          {
+            width: MAIN_WIDTH,
+            backgroundColor: theme.surface === '#000000' ? '#111317' : theme.surface,
+            borderColor: theme.border,
+          },
+        ]}
+      >
+        <Animated.View
+          style={[
+            splitStyles.activeBlob,
+            {
+              width: TAB_WIDTH,
+              opacity: blobOpacity,
+              transform: [{ translateX }],
+            },
+          ]}
+          pointerEvents="none"
+        >
+          <View style={[splitStyles.pillInner, { backgroundColor: theme.surface2, borderColor: theme.border }]} />
+        </Animated.View>
+
+        <View style={splitStyles.tabsRow}>
+          {ALL_TABS.slice(0, 4).map((tab) => {
+            const isFocused = currentTab === tab.key;
+            const activeColor = tab.key === 'recover' ? theme.recovery : theme.accent;
+            const color = isFocused ? activeColor : theme.textSecondary;
+            return (
+              <TouchableOpacity
+                key={tab.key}
+                onPress={() => onSelectTab(tab.key)}
+                style={[splitStyles.tabBtn, { width: TAB_WIDTH }]}
+                activeOpacity={0.75}
+              >
+                <Ionicons
+                  name={isFocused ? tab.activeIcon : tab.inactiveIcon}
+                  size={19}
+                  color={color}
+                />
+                <Text style={[splitStyles.label, { color, fontFamily: isFocused ? Fonts.semiBold : Fonts.medium }]}>
+                  {tab.label}
+                </Text>
+              </TouchableOpacity>
+            );
+          })}
+        </View>
+      </View>
+
+      {/* Refined Squircle Profile Island */}
+      <TouchableOpacity
+        activeOpacity={0.8}
+        onPress={() => onSelectTab('profile')}
+        accessibilityRole="tab"
+        accessibilityLabel="Profile"
+      >
+        <View
+          style={[
+            splitStyles.profileSquircle,
+            {
+              width: PROFILE_SIZE,
+              height: PROFILE_SIZE,
+              backgroundColor: theme.surface === '#000000' ? '#111317' : theme.surface,
+              borderColor: isProfile ? theme.accent : theme.border,
+              borderWidth: isProfile ? 2 : 1,
+              shadowColor: isProfile ? theme.accent : '#000000',
+            },
+          ]}
+        >
+          <Ionicons
+            name={isProfile ? 'person' : 'person-outline'}
+            size={22}
+            color={isProfile ? theme.accent : theme.textSecondary}
+          />
+          {isProfile && <View style={[splitStyles.profileBadge, { backgroundColor: theme.accent }]} />}
+        </View>
+      </TouchableOpacity>
+    </View>
+  );
+};
+
+/* =========================================================================
+   STYLESHEETS
+   ========================================================================= */
+const capsuleStyles = StyleSheet.create({
+  outer: {
     position: 'absolute',
-    bottom: Platform.OS === 'ios' ? 22 : 18,
-    left: HORIZONTAL_PADDING,
-    right: HORIZONTAL_PADDING,
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'space-between',
+    bottom: Platform.OS === 'ios' ? 24 : 18,
+    left: HORIZONTAL_MARGIN,
+    right: HORIZONTAL_MARGIN,
     zIndex: 999,
     elevation: 12,
   },
-  mainBar: {
-    width: MAIN_BAR_WIDTH,
-    height: TAB_HEIGHT,
-    borderRadius: TAB_HEIGHT / 2,
+  dock: {
+    height: 64,
+    borderRadius: 32,
     borderWidth: 1,
     overflow: 'hidden',
     shadowColor: '#000000',
@@ -345,26 +533,144 @@ const styles = StyleSheet.create({
     shadowRadius: 14,
     elevation: 8,
   },
-  tabContent: {
+  activePillContainer: {
+    position: 'absolute',
+    height: '100%',
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+  activePillInner: {
+    width: '84%',
+    height: '78%',
+    borderRadius: 22,
+    borderWidth: 1,
+    overflow: 'hidden',
+    justifyContent: 'flex-start',
+    alignItems: 'center',
+  },
+  topIndicatorLine: {
+    width: 20,
+    height: 2.5,
+    borderRadius: 1.5,
+    marginTop: 2,
+  },
+  tabsRow: {
     flex: 1,
     flexDirection: 'row',
     alignItems: 'center',
   },
-  tabItem: {
+  tabBtn: {
     height: '100%',
     justifyContent: 'center',
     alignItems: 'center',
     zIndex: 1,
   },
-  iconContainer: {
+  label: {
+    fontSize: 9.5,
+    marginTop: 3,
+    letterSpacing: 0.2,
+  },
+});
+
+const prominentStyles = StyleSheet.create({
+  outer: {
+    position: 'absolute',
+    bottom: Platform.OS === 'ios' ? 24 : 18,
+    left: HORIZONTAL_MARGIN,
+    right: HORIZONTAL_MARGIN,
+    zIndex: 999,
+    elevation: 12,
+  },
+  dock: {
+    height: 64,
+    borderRadius: 32,
+    borderWidth: 1,
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    shadowColor: '#000000',
+    shadowOffset: { width: 0, height: 6 },
+    shadowOpacity: 0.35,
+    shadowRadius: 14,
+    elevation: 8,
+    paddingHorizontal: 4,
+  },
+  tabBtn: {
+    height: '100%',
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+  label: {
+    fontSize: 9.5,
+    marginTop: 3,
+    letterSpacing: 0.2,
+  },
+  activeDot: {
+    width: 4,
+    height: 4,
+    borderRadius: 2,
+    marginTop: 2,
+  },
+  centerSlot: {
+    width: 64,
     alignItems: 'center',
     justifyContent: 'center',
-    width: '100%',
-    height: '100%',
-    paddingTop: 4,
+    marginTop: -18,
   },
-  tabLabel: {
-    fontFamily: Fonts.semiBold,
+  centerOrb: {
+    width: 54,
+    height: 54,
+    borderRadius: 27,
+    borderWidth: 2,
+    alignItems: 'center',
+    justifyContent: 'center',
+    shadowOffset: { width: 0, height: 4 },
+    shadowOpacity: 0.4,
+    shadowRadius: 10,
+    elevation: 10,
+  },
+  centerLabel: {
+    fontSize: 9.5,
+    marginTop: 4,
+    letterSpacing: 0.2,
+  },
+});
+
+const splitStyles = StyleSheet.create({
+  outer: {
+    position: 'absolute',
+    bottom: Platform.OS === 'ios' ? 24 : 18,
+    left: HORIZONTAL_MARGIN,
+    right: HORIZONTAL_MARGIN,
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    zIndex: 999,
+    elevation: 12,
+  },
+  mainBar: {
+    height: 62,
+    borderRadius: 31,
+    borderWidth: 1,
+    overflow: 'hidden',
+    shadowColor: '#000000',
+    shadowOffset: { width: 0, height: 6 },
+    shadowOpacity: 0.35,
+    shadowRadius: 14,
+    elevation: 8,
+  },
+  tabsRow: {
+    flex: 1,
+    flexDirection: 'row',
+    alignItems: 'center',
+  },
+  tabBtn: {
+    height: '100%',
+    justifyContent: 'center',
+    alignItems: 'center',
+    zIndex: 1,
+  },
+  label: {
     fontSize: 9.5,
     marginTop: 3,
     letterSpacing: 0.2,
@@ -376,27 +682,26 @@ const styles = StyleSheet.create({
     alignItems: 'center',
   },
   pillInner: {
-    width: '88%',
-    height: '80%',
-    borderRadius: 24,
+    width: '84%',
+    height: '76%',
+    borderRadius: 20,
     borderWidth: 1,
   },
-  profileWrapper: {
-    width: PROFILE_SIZE,
-    height: PROFILE_SIZE,
+  profileSquircle: {
+    borderRadius: 18,
     alignItems: 'center',
     justifyContent: 'center',
-  },
-  profileCircle: {
-    width: PROFILE_SIZE,
-    height: PROFILE_SIZE,
-    borderRadius: PROFILE_SIZE / 2,
-    alignItems: 'center',
-    justifyContent: 'center',
-    shadowColor: '#000000',
     shadowOffset: { width: 0, height: 6 },
     shadowOpacity: 0.35,
-    shadowRadius: 14,
+    shadowRadius: 12,
     elevation: 8,
+  },
+  profileBadge: {
+    position: 'absolute',
+    top: 8,
+    right: 8,
+    width: 6,
+    height: 6,
+    borderRadius: 3,
   },
 });

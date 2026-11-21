@@ -58,8 +58,9 @@ export default function App() {
           )}
         </View>
 
-        {/* Liquid Tab Bar (EvolveX-inspired Floating Island Navigation) */}
+        {/* Liquid Tab Bar (Configurable: 'capsule' | 'center-prominent' | 'refined-split') */}
         <LiquidTabBar
+          variant="capsule"
           currentTab={currentTab}
           onSelectTab={setCurrentTab}
           theme={theme}
