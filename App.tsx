@@ -12,7 +12,7 @@ import { RecoverScreen } from './src/screens/RecoverScreen';
 import { ProfileScreen } from './src/screens/ProfileScreen';
 import { UrgeModal } from './src/components/UrgeModal';
 import { LaunchSplash } from './src/components/LaunchSplash';
-import { LiquidTabBar } from './src/components/LiquidTabBar';
+import { SpotifyTabBar } from './src/components/SpotifyTabBar';
 
 export default function App() {
   const [fontsLoaded] = useFonts({
@@ -58,9 +58,8 @@ export default function App() {
           )}
         </View>
 
-        {/* Liquid Tab Bar (Configurable: 'capsule' | 'center-prominent' | 'refined-split') */}
-        <LiquidTabBar
-          variant="capsule"
+        {/* Spotify-style Bottom Navigation Bar */}
+        <SpotifyTabBar
           currentTab={currentTab}
           onSelectTab={setCurrentTab}
           theme={theme}
