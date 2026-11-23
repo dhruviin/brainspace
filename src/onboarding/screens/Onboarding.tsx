@@ -10,6 +10,7 @@ import { Playground, qaBuild } from './Playground';
 import { Intro } from './Intro';
 import { Question } from './Question';
 import { Numbers } from './Numbers';
+import { Limit } from './Limit';
 import { Solution } from './Solution';
 import { Social } from './Social';
 import { Reflection } from './Reflection';
@@ -18,6 +19,7 @@ import { Cost } from './Cost';
 const scenes: Partial<Record<Step, React.ComponentType>> = {
   intro: Intro,
   numbers: Numbers,
+  limit: Limit,
   solution: Solution,
   social: Social,
   head: Reflection,
