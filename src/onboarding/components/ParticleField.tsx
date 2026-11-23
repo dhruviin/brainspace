@@ -29,10 +29,7 @@ const stride = 4,
   cell = 8,
   shades = 9;
 function stampTexture() {
-  const surface = Skia.Surface.MakeOffscreen(
-    cell * shades,
-    cell * palette.length ** 2,
-  );
+  const surface = Skia.Surface.Make(cell * shades, cell * palette.length ** 2);
   if (!surface) return null;
   const canvas = surface.getCanvas(),
     paint = Skia.Paint();

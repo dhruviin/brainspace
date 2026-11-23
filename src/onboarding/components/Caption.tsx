@@ -1,15 +1,10 @@
 import React, { useEffect, useMemo } from 'react';
-import {
-  Text,
-  TextInput,
-  View,
-  StyleSheet,
-  type TextStyle,
-} from 'react-native';
+import { Text, TextInput, View, type TextStyle } from 'react-native';
 import Animated, {
   Easing,
   FadeInUp,
   useAnimatedProps,
+  useAnimatedStyle,
   useSharedValue,
   withTiming,
   type SharedValue,
@@ -52,25 +47,35 @@ function Word({
   start,
   clock,
   style,
+  background,
 }: {
   word: string;
   start: number;
   clock: SharedValue<number>;
   style: TextStyle;
+  background: string;
 }) {
-  const props = useAnimatedProps(() => ({
-    text: word.slice(0, Math.max(0, Math.floor(clock.value) - start)),
-    defaultValue: '',
-  }));
+  const mask = useAnimatedStyle(() => {
+    const visible = Math.max(
+      0,
+      Math.min(word.length, Math.floor(clock.value) - start),
+    );
+    return { width: ((1 - visible / word.length) * 100 + '%') as `${number}%` };
+  });
   return (
     <View pointerEvents="none">
-      <Text style={[style, { opacity: 0 }]}>{word}</Text>
-      <Input
-        editable={false}
-        underlineColorAndroid="transparent"
-        importantForAccessibility="no"
-        animatedProps={props}
-        style={[StyleSheet.absoluteFill, style, { padding: 0, margin: 0 }]}
+      <Text style={style}>{word}</Text>
+      <Animated.View
+        style={[
+          {
+            position: 'absolute',
+            top: 0,
+            bottom: 0,
+            right: 0,
+            backgroundColor: background,
+          },
+          mask,
+        ]}
       />
     </View>
   );
@@ -142,7 +147,12 @@ export function TypewriterCaption({
         {words.map((w, i) => (
           <View key={text + i} style={{ marginRight: w.space ? 4 : 0 }}>
             {motion ? (
-              <Word {...w} clock={clock} style={{ ...style, color: w.color }} />
+              <Word
+                {...w}
+                background={small ? ink.surface2 : ink.bg}
+                clock={clock}
+                style={{ ...style, color: w.color }}
+              />
             ) : (
               <Text style={[style, { color: w.color }]}>{w.word}</Text>
             )}
