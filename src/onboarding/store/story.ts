@@ -13,6 +13,8 @@ type State = {
   limit: number | null;
   completed: boolean;
   prompted: boolean;
+  rewardPhase: number;
+  setRewardPhase: (v: number) => void;
   gifts: number[];
   gift: number | null;
   events: Event[];
@@ -40,6 +42,8 @@ export const useStory = create<State>()(
       limit: null,
       completed: false,
       prompted: false,
+      rewardPhase: 0,
+      setRewardPhase: (rewardPhase) => set({ rewardPhase }),
       gifts: [],
       gift: null,
       events: [],

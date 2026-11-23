@@ -7,6 +7,7 @@ import { type Step } from '../store/model';
 import { copy, questions } from '../strings';
 import { ink } from '../theme';
 import { Playground, qaBuild } from './Playground';
+import { Reward, Offer } from './Reward';
 import { Intro } from './Intro';
 import { Question } from './Question';
 import { Numbers } from './Numbers';
@@ -18,6 +19,8 @@ import { Cost } from './Cost';
 
 const scenes: Partial<Record<Step, React.ComponentType>> = {
   intro: Intro,
+  reward: Reward,
+  offer: Offer,
   numbers: Numbers,
   limit: Limit,
   solution: Solution,
