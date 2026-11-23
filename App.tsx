@@ -14,7 +14,7 @@ import { UrgeModal } from './src/components/UrgeModal';
 import { LaunchSplash } from './src/components/LaunchSplash';
 import { SpotifyTabBar } from './src/components/SpotifyTabBar';
 
-export default function App() {
+export default function App({ afterSplash = false }: { afterSplash?: boolean } = {}) {
   const [fontsLoaded] = useFonts({
     'Poppins-Regular': require('./assets/fonts/Poppins-Regular.ttf'),
     'Poppins-Medium': require('./assets/fonts/Poppins-Medium.ttf'),
@@ -26,7 +26,7 @@ export default function App() {
   const [currentTab, setCurrentTab] = useState<TabType>('home');
   const [themeMode, setThemeMode] = useState<'MidnightDark' | 'ArcticLight'>('MidnightDark');
   const [urgeModalVisible, setUrgeModalVisible] = useState(false);
-  const [showSplash, setShowSplash] = useState(true);
+  const [showSplash, setShowSplash] = useState(!afterSplash);
 
   const theme: ThemeColors = themeMode === 'MidnightDark' ? MidnightDark : ArcticLight;
 
