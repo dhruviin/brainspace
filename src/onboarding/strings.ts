@@ -31,6 +31,7 @@ export const copy = {
   cost: (annual: string) =>
     'What could {' + annual + ' reels|danger} cost in time?',
   yearly: 'days every year',
+  months: (days: number) => 'About ' + (days / 30.4).toFixed(1) + ' months',
   costNote:
     'Estimate at ' +
     SECONDS_PER_REEL +

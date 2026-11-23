@@ -10,10 +10,12 @@ import { Playground, qaBuild } from './Playground';
 import { Intro } from './Intro';
 import { Question } from './Question';
 import { Numbers } from './Numbers';
+import { Cost } from './Cost';
 
 const scenes: Partial<Record<Step, React.ComponentType>> = {
   intro: Intro,
   numbers: Numbers,
+  cost: Cost,
 };
 const order: Step[] = [
   'role',
