@@ -1,4 +1,4 @@
-import React, { useRef, useState } from 'react';
+import React, { useState } from 'react';
 import {
   View,
   Text,
@@ -9,7 +9,7 @@ import {
 } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import { LinearGradient } from 'expo-linear-gradient';
-import { Fonts, ThemeColors } from '../theme/tokens';
+import { Fonts, ThemeColors, MidnightDark } from '../theme/tokens';
 import { TabType } from '../types';
 
 interface SpotifyTabBarProps {
@@ -34,96 +34,28 @@ const SPOTIFY_TABS: TabItemDef[] = [
 ];
 
 // Spotify signature palette
-const SPOTIFY_INACTIVE = '#B3B3B3';
-const SPOTIFY_ACTIVE = '#FFFFFF';
-const SPOTIFY_MINI_BG = '#282828';
-const SPOTIFY_ACCENT = '#1DB954';
 
 export const SpotifyTabBar: React.FC<SpotifyTabBarProps> = ({
   currentTab,
   onSelectTab,
+  theme = MidnightDark,
 }) => {
-  const [isPlaying, setIsPlaying] = useState(false);
-  const [isLiked, setIsLiked] = useState(false);
 
   return (
     <View style={styles.outerContainer} pointerEvents="box-none">
       {/* 100% Spotify Translucent Gradient Backdrop (NO solid background) */}
       <LinearGradient
         colors={[
-          'rgba(0, 0, 0, 0)',
-          'rgba(0, 0, 0, 0.35)',
-          'rgba(0, 0, 0, 0.65)',
-          'rgba(0, 0, 0, 0.85)',
-          'rgba(0, 0, 0, 0.92)',
+          `${theme.bg}00`,
+          `${theme.bg}59`,
+          `${theme.bg}A6`,
+          `${theme.bg}D9`,
+          `${theme.bg}EB`,
         ]}
         locations={[0, 0.25, 0.55, 0.8, 1.0]}
         style={styles.gradientBackdrop}
         pointerEvents="none"
       />
-
-      {/* Floating Spotify Mini-Player Bar */}
-      <TouchableOpacity
-        activeOpacity={0.92}
-        style={styles.miniPlayerContainer}
-        onPress={() => onSelectTab('focus')}
-        accessibilityRole="button"
-        accessibilityLabel="Now Playing Focus Track"
-      >
-        {/* Track Thumbnail */}
-        <View style={styles.miniPlayerThumb}>
-          <Ionicons name="headset" size={20} color="#FFFFFF" />
-        </View>
-
-        {/* Track Metadata */}
-        <View style={styles.miniPlayerMeta}>
-          <Text style={styles.miniPlayerTitle} numberOfLines={1}>
-            Deep Work Focus • 25m
-          </Text>
-          <Text style={styles.miniPlayerSubtitle} numberOfLines={1}>
-            Binaural Alpha Waves • BrainSpace
-          </Text>
-        </View>
-
-        {/* Right Action Icons (Devices, Add/Heart, Play/Pause) */}
-        <View style={styles.miniPlayerControls}>
-          <TouchableOpacity
-            hitSlop={{ top: 8, bottom: 8, left: 8, right: 8 }}
-            style={styles.controlIconBtn}
-          >
-            <Ionicons name="hardware-chip-outline" size={19} color={SPOTIFY_INACTIVE} />
-          </TouchableOpacity>
-
-          <TouchableOpacity
-            hitSlop={{ top: 8, bottom: 8, left: 8, right: 8 }}
-            style={styles.controlIconBtn}
-            onPress={() => setIsLiked(!isLiked)}
-          >
-            <Ionicons
-              name={isLiked ? 'add-circle' : 'add-circle-outline'}
-              size={22}
-              color={isLiked ? SPOTIFY_ACCENT : SPOTIFY_INACTIVE}
-            />
-          </TouchableOpacity>
-
-          <TouchableOpacity
-            hitSlop={{ top: 8, bottom: 8, left: 8, right: 8 }}
-            style={styles.playBtn}
-            onPress={() => setIsPlaying(!isPlaying)}
-          >
-            <Ionicons
-              name={isPlaying ? 'pause' : 'play'}
-              size={24}
-              color={SPOTIFY_ACTIVE}
-            />
-          </TouchableOpacity>
-        </View>
-
-        {/* Bottom Progress Bar */}
-        <View style={styles.miniProgressBarTrack}>
-          <View style={styles.miniProgressBarFill} />
-        </View>
-      </TouchableOpacity>
 
       {/* Spotify 5-Tab Navigation Bar with NO solid background */}
       <View style={styles.tabsContainer} accessibilityRole="tablist">
@@ -135,6 +67,7 @@ export const SpotifyTabBar: React.FC<SpotifyTabBarProps> = ({
                 key={tab.key}
                 tab={tab}
                 isFocused={isFocused}
+                theme={theme}
                 onPress={() => onSelectTab(tab.key)}
               />
             );
@@ -148,6 +81,7 @@ export const SpotifyTabBar: React.FC<SpotifyTabBarProps> = ({
 interface SpotifyTabButtonProps {
   tab: TabItemDef;
   isFocused: boolean;
+  theme: ThemeColors;
   onPress: () => void;
 }
 
@@ -155,8 +89,9 @@ const SpotifyTabButton: React.FC<SpotifyTabButtonProps> = ({
   tab,
   isFocused,
   onPress,
+  theme,
 }) => {
-  const scaleAnim = useRef(new Animated.Value(1)).current;
+  const [scaleAnim] = useState(() => new Animated.Value(1));
 
   const handlePressIn = () => {
     Animated.spring(scaleAnim, {
@@ -176,7 +111,7 @@ const SpotifyTabButton: React.FC<SpotifyTabButtonProps> = ({
     }).start();
   };
 
-  const color = isFocused ? SPOTIFY_ACTIVE : SPOTIFY_INACTIVE;
+  const color = isFocused ? theme.textPrimary : theme.textSecondary;
 
   return (
     <TouchableOpacity
@@ -226,77 +161,6 @@ const styles = StyleSheet.create({
     left: 0,
     right: 0,
     bottom: 0,
-  },
-  miniPlayerContainer: {
-    height: 56,
-    marginHorizontal: 8,
-    marginBottom: 6,
-    borderRadius: 8,
-    backgroundColor: SPOTIFY_MINI_BG,
-    flexDirection: 'row',
-    alignItems: 'center',
-    paddingHorizontal: 8,
-    overflow: 'hidden',
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: 4 },
-    shadowOpacity: 0.4,
-    shadowRadius: 8,
-    elevation: 8,
-  },
-  miniPlayerThumb: {
-    width: 38,
-    height: 38,
-    borderRadius: 4,
-    backgroundColor: '#1E293B',
-    alignItems: 'center',
-    justifyContent: 'center',
-  },
-  miniPlayerMeta: {
-    flex: 1,
-    marginLeft: 10,
-    marginRight: 6,
-    justifyContent: 'center',
-  },
-  miniPlayerTitle: {
-    fontSize: 12.5,
-    color: SPOTIFY_ACTIVE,
-    fontFamily: Fonts.bold,
-    letterSpacing: 0.1,
-  },
-  miniPlayerSubtitle: {
-    fontSize: 10.5,
-    color: SPOTIFY_INACTIVE,
-    fontFamily: Fonts.medium,
-    marginTop: 1,
-    letterSpacing: 0.1,
-  },
-  miniPlayerControls: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: 12,
-  },
-  controlIconBtn: {
-    padding: 2,
-  },
-  playBtn: {
-    padding: 2,
-    marginLeft: 2,
-  },
-  miniProgressBarTrack: {
-    position: 'absolute',
-    bottom: 0,
-    left: 8,
-    right: 8,
-    height: 2,
-    backgroundColor: 'rgba(255, 255, 255, 0.12)',
-    borderRadius: 1,
-    overflow: 'hidden',
-  },
-  miniProgressBarFill: {
-    width: '45%',
-    height: '100%',
-    backgroundColor: SPOTIFY_ACTIVE,
-    borderRadius: 1,
   },
   tabsContainer: {
     backgroundColor: 'transparent',

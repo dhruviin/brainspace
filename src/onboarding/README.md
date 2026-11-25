@@ -1,15 +1,27 @@
-# BrainSpace Android onboarding
+# BrainSpace first-run setup
 
-From the mobile package, install the locked dependencies with `npm ci`, then run `npx expo run:android --device`. This flow needs a native build for Skia, notifications, Worklets, and the existing Android usage module. For a subsequent JS edit, use `npx expo start` with the development build installed. SDK 58 pairs React Native 0.88 with Reanimated 4.7 and Worklets 0.13.
+The active flow lives in `setup/`. Both platform entry points use Expo Router, with the existing launch splash followed by the saved setup cursor or Home. Returning users who completed the previous story retain access to Home.
 
-### Working on the story
+The journey is welcome → goals → distracting activities → overall phone-time baseline → optional Reels/Shorts estimate → triggers → a moment to protect → optional private habit interests → focus duration → live appearance preview → optional guided Android access → personal starting plan. Reels only appears for people who select short-form video; private habit interests only appear when requested. Every question can be skipped. Adults can also explore without answering questions or creating an account.
 
-Long-press the BrainSpace wordmark in a development build for the motion playground and step picker. A release built with `EXPO_PUBLIC_STORY_QA=1` also exposes the playground for profiling. Keep that variable unset for distribution. Use a fresh Android emulator profile to replay first launch. The production route resumes saved progress and opens Home after completion.
+`setup/content.ts` owns the questions and copy. `setup/model.ts` owns branching, selection rules, defaults and input recovery. `setup/store.ts` saves progress after each change and waits for a successful durable save before completing. `setup/persistence.ts` serializes writes and keeps sensitive categories and custom habit labels out of AsyncStorage: they use SecureStore when available. A build without private storage offers a general preference or Skip. No answers go to analytics or a server.
 
-- **Timing and type** — Edit `theme.ts` for motion durations. The onboarding palette and Poppins weights inherit `../theme/tokens.ts`. The UI respects the Android reduced-motion setting.
-- **Artwork** — `shapes/index.ts` builds and caches targets in a 256-unit artboard. `samplePath` accepts a filled SVG path. `sampleMask` accepts a decoded Skia image with transparent padding. The field draws round stamps in a single atlas. TODO(art): supply final head, person, phone and trophy masks, expression PNGs for the chrome companion, and gift-box artwork if desired. TODO(type): a replacement font family needs Medium, Bold, and ExtraBold files registered in the Android layout.
-- **New steps** — Add a stable ID to `store/model.ts`, English copy to `strings.ts`, and the screen in `screens/`. Set its beat count for in-screen reveals. Use the store’s navigation methods so Android Back and cold-start resume agree.
-- **Estimates** — The daily selection drives the week, 30-day month, and year. `SECONDS_PER_REEL` and the reported screen-time range determine the time projection. The default target is 70%, rounded to tens. The lower target changes the daily savings and highlighted calendar days.
-- **Persistence** — AsyncStorage holds the cursor, answers, limit, and gift. Android SecureStore holds optional symptom selections. The local event buffer records the step ID and time for `onboarding_step_view`, `onboarding_answer`, and `onboarding_complete`. It can be connected to a consented analytics service later. The offer screen is a preview and does not process payments.
+Appearance, selected focus duration and the personal plan carry into the app. Profile → Your starting plan reopens setup with existing answers. Device time zone is captured on completion. Android Usage Access checks the actual native permission again after returning from settings; it never infers permission from opening settings. The access step in `permissions/` includes original offline video guides, separate Accessibility disclosure and per-app opt-in, Android-verified grants, and explicitly user-confirmed Xiaomi settings. The experimental native detector estimates recognised Instagram/YouTube feed visits and page changes; it never promises complete coverage. Profile → Device access & reel estimates provides the same guides, pause/resume, consent withdrawal and count erasure. See `docs/REEL_DETECTION_PILOT.md` for privacy boundaries and validation limits. Home uses real or unavailable usage states, with no sample statistics.
 
-Run `npx tsc --noEmit`, `npx eslint src/onboarding src/app`, and `node --test src/onboarding/store/model.test.cjs` (Node 24). To build an APK locally, run `./gradlew :app:assembleRelease` inside `android/`. The current Android project uses its development signing key for local release builds.
+The layout follows the app’s Spotify-inspired styling: shared Midnight/Arctic tokens, green actions and selection states, charcoal surfaces, centered bold headings, compact choice rows and tiles, and pill buttons. `setupPalette` references the app palettes directly, so onboarding and Home stay consistent.
+
+Animations use native-driven fades, slides, selection feedback and a gentle companion float. Reduced motion disables travel and continuous animation. Screens scroll at smaller sizes and larger font scales; actions remain in the safe-area footer.
+
+The older particle-story components remain in `screens/`, `components/` and `store/` as design references. They are not part of the active first-run route.
+
+Validation:
+
+```sh
+npm run test:onboarding
+node --test src/onboarding/permissions/permissions.test.cjs
+npx tsc --noEmit
+npx eslint src/onboarding/setup src/app src/bootstrap.ts App.tsx src/screens/HomeScreen.tsx src/screens/FocusScreen.tsx src/screens/ProfileScreen.tsx src/services/UsageStatsService.ts
+npm run lint
+```
+
+For Android device preview, rebuild the debug app with `npm run android` when the installed APK predates the current native dependencies. Start Metro on a free port and point the app’s development server setting to that host and port. An emulator uses `10.0.2.2` to reach the host; a connected physical device can use `adb reverse`. Use a fresh emulator profile for first-launch testing; do not clear a user's existing app data to replay onboarding. Existing users can review it from Profile.

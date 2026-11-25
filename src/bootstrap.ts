@@ -1,3 +1,2 @@
-import { registerRootComponent } from 'expo';
-import App from '../App';
-registerRootComponent(App);
+// All platforms share the splash → saved setup → Home route guards.
+import 'expo-router/entry';

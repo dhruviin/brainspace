@@ -1,16 +1,15 @@
-import React, { useCallback, useState, useSyncExternalStore } from 'react';
-import { StyleSheet, View } from 'react-native';
+import React, { useCallback, useEffect, useState } from 'react';
+import { ActivityIndicator, StyleSheet, View } from 'react-native';
 import { Stack } from 'expo-router';
 import { StatusBar } from 'expo-status-bar';
 import { useFonts } from 'expo-font';
 import { GestureHandlerRootView } from 'react-native-gesture-handler';
 import { SafeAreaProvider } from 'react-native-safe-area-context';
 import { LaunchSplash } from '../components/LaunchSplash';
-import { useStory } from '../onboarding/store/story';
-import { ink } from '../onboarding/theme';
+import { useSetup } from '../onboarding/setup/store';
+import { setupPalette } from '../theme/tokens';
 
-const subscribe = (listener: () => void) =>
-  useStory.persist.onFinishHydration(listener);
+const ink = setupPalette.night;
 export default function Layout() {
   const [fonts, error] = useFonts({
     'Poppins-Regular': require('../../assets/fonts/Poppins-Regular.ttf'),
@@ -20,9 +19,10 @@ export default function Layout() {
     'Poppins-ExtraBold': require('../../assets/fonts/Poppins-ExtraBold.ttf'),
   });
   const [launched, setLaunched] = useState(false),
-    hydrated = useSyncExternalStore(subscribe, useStory.persist.hasHydrated);
-  const complete = useStory((s) => s.completed),
+    hydrated = useSetup((s) => s.hydrated);
+  const complete = useSetup((s) => s.completed),
     finish = useCallback(() => setLaunched(true), []);
+  useEffect(() => { void useSetup.getState().hydrate(); }, []);
   return (
     <GestureHandlerRootView style={{ flex: 1, backgroundColor: ink.bg }}>
       <SafeAreaProvider>
@@ -36,12 +36,17 @@ export default function Layout() {
             }}
           >
             <Stack.Protected guard={!complete}>
-              <Stack.Screen name="onboarding" />
+              <Stack.Screen name="onboarding" options={{ gestureEnabled: false }} />
             </Stack.Protected>
             <Stack.Protected guard={complete}>
               <Stack.Screen name="index" />
             </Stack.Protected>
           </Stack>
+        )}
+        {launched && (!hydrated || (!fonts && !error)) && (
+          <View style={{ flex: 1, alignItems: 'center', justifyContent: 'center' }}>
+            <ActivityIndicator color={ink.accent} accessibilityLabel="Preparing BrainSpace" />
+          </View>
         )}
         {!launched && (
           <View style={StyleSheet.absoluteFill}>

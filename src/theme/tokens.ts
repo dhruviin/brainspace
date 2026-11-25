@@ -36,16 +36,16 @@ export const ArcticLight: ThemeColors = {
   textPrimary: '#111318',
   textSecondary: '#69717D',
   border: '#E3E6EA',
-  accent: '#1688D4',
+  accent: '#15803D',
   success: '#079B6C',
   warning: '#C98B16',
   danger: '#D92F3A',
-  recovery: '#8062D9',
+  recovery: '#15803D',
 };
 
 export const setupPalette = {
-  night: { ...MidnightDark, bg: '#090A12', surface: '#12151E', border: '#2B303D', textPrimary: '#F6F7FA', textSecondary: '#A7AEBD', accent: '#77B9FF' },
-  day: { ...ArcticLight, bg: '#F7F8FA', textSecondary: '#525D6D', accent: '#205FA7' },
+  night: MidnightDark,
+  day: ArcticLight,
 };
 
 export const Typography = {
