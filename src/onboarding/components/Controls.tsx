@@ -20,11 +20,20 @@ import * as Haptics from 'expo-haptics';
 import { face, ink } from '../theme';
 import { TypewriterCaption } from './Caption';
 import { useMotion } from '../hooks/useMotion';
+import { MASCOT_DATA_URIS } from './mascotData';
 export const tick = () => {
   void Haptics.selectionAsync().catch(() => {});
 };
 export type Expression = 'neutral' | 'wave' | 'tired' | 'shocked' | 'happy';
-const orb = require('../../../assets/onboarding/orb.png');
+
+const defaultMascotSources: Record<Expression, ImageSourcePropType> = {
+  neutral: { uri: MASCOT_DATA_URIS.neutral },
+  happy: { uri: MASCOT_DATA_URIS.happy },
+  wave: { uri: MASCOT_DATA_URIS.wave },
+  tired: { uri: MASCOT_DATA_URIS.tired },
+  shocked: { uri: MASCOT_DATA_URIS.shocked },
+};
+
 export function Mascot({
   expression = 'neutral',
   size = 52,
@@ -34,16 +43,9 @@ export function Mascot({
   size?: number;
   sources?: Partial<Record<Expression, ImageSourcePropType>>;
 }) {
-  const source = sources?.[expression];
-  // TODO(art): pass expression PNGs here. The chrome orb and its visor are the bundled original.
-  const eyes =
-    expression === 'tired'
-      ? '–  –'
-      : expression === 'happy'
-        ? '⌒  ⌒'
-        : expression === 'shocked'
-          ? '●  ●'
-          : '•  •';
+  const source =
+    sources?.[expression] ?? defaultMascotSources[expression] ?? defaultMascotSources.neutral;
+
   return (
     <View
       accessible={false}
@@ -52,41 +54,14 @@ export function Mascot({
         height: size,
         alignItems: 'center',
         justifyContent: 'center',
-        transform: [{ rotate: expression === 'wave' ? '-9deg' : '0deg' }],
+        transform: [{ rotate: expression === 'wave' ? '-8deg' : '0deg' }],
       }}
     >
       <Image
         resizeMode="contain"
-        source={source ?? orb}
+        source={source}
         style={{ width: size, height: size }}
       />
-      {!source && (
-        <View
-          style={{
-            position: 'absolute',
-            top: size * 0.42,
-            left: size * 0.23,
-            width: size * 0.53,
-            height: size * 0.22,
-            borderRadius: size * 0.15,
-            backgroundColor: '#19231F',
-            alignItems: 'center',
-            justifyContent: 'center',
-          }}
-        >
-          <Text
-            allowFontScaling={false}
-            style={{
-              fontSize: size * 0.145,
-              color: '#B9F2CF',
-              fontWeight: 'bold',
-              includeFontPadding: false,
-            }}
-          >
-            {eyes}
-          </Text>
-        </View>
-      )}
     </View>
   );
 }
