@@ -23,50 +23,17 @@ export interface DailyUsageReport {
   permissionGranted: boolean;
 }
 
-// Fallback baseline data if permission is not yet granted or non-Android environment
-const FALLBACK_REPORT: DailyUsageReport = {
-  startOfDayUtc: Date.now() - 14 * 60 * 60 * 1000,
-  timestampUtc: Date.now(),
-  totalForegroundMs: 165 * 60 * 1000,
-  totalForegroundMinutes: 165, // 2h 45m
-  productiveMinutes: 75,
-  neutralMinutes: 40,
-  distractingMinutes: 50,
-  permissionGranted: false,
-  apps: [
-    {
-      packageName: 'com.instagram.android',
-      appName: 'Instagram',
-      foregroundMs: 54 * 60 * 1000,
-      foregroundMinutes: 54,
-      lastTimeUsed: Date.now() - 10 * 60 * 1000,
-      category: 'Distracting',
-    },
-    {
-      packageName: 'com.google.android.youtube',
-      appName: 'YouTube',
-      foregroundMs: 42 * 60 * 1000,
-      foregroundMinutes: 42,
-      lastTimeUsed: Date.now() - 35 * 60 * 1000,
-      category: 'Distracting',
-    },
-    {
-      packageName: 'com.slack',
-      appName: 'Slack',
-      foregroundMs: 38 * 60 * 1000,
-      foregroundMinutes: 38,
-      lastTimeUsed: Date.now() - 5 * 60 * 1000,
-      category: 'Productive',
-    },
-    {
-      packageName: 'com.whatsapp',
-      appName: 'WhatsApp',
-      foregroundMs: 25 * 60 * 1000,
-      foregroundMinutes: 25,
-      lastTimeUsed: Date.now() - 45 * 60 * 1000,
-      category: 'Neutral',
-    },
-  ],
+// Missing permission is an empty state, never fabricated activity.
+const emptyReport = (): DailyUsageReport => {
+  const now = new Date();
+  const midnight = new Date(now);
+  midnight.setHours(0, 0, 0, 0);
+  return {
+    startOfDayUtc: midnight.getTime(), timestampUtc: now.getTime(),
+    totalForegroundMs: 0, totalForegroundMinutes: 0,
+    productiveMinutes: 0, neutralMinutes: 0, distractingMinutes: 0,
+    apps: [], permissionGranted: false,
+  };
 };
 
 export const UsageStatsService = {
@@ -105,13 +72,13 @@ export const UsageStatsService = {
    */
   async getDailyUsage(): Promise<DailyUsageReport> {
     if (Platform.OS !== 'android' || !BrainSpaceUsageStats) {
-      return FALLBACK_REPORT;
+      return emptyReport();
     }
 
     try {
       const hasPermission = await BrainSpaceUsageStats.checkPermission();
       if (!hasPermission) {
-        return { ...FALLBACK_REPORT, permissionGranted: false };
+        return emptyReport();
       }
 
       const nativeReport = await BrainSpaceUsageStats.getDailyUsage();
@@ -121,7 +88,7 @@ export const UsageStatsService = {
       };
     } catch (e) {
       console.warn('Error reading native usage stats:', e);
-      return FALLBACK_REPORT;
+      return emptyReport();
     }
   },
 };

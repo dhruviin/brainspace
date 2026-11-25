@@ -1,9 +1,13 @@
 import React, { useState, useEffect } from 'react';
-import { View, Text, StyleSheet, ScrollView, TouchableOpacity } from 'react-native';
+import { AppState, View, Text, StyleSheet, ScrollView, TouchableOpacity } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import { ThemeColors, Fonts } from '../theme/tokens';
-import { MomentumOrb } from '../components/MomentumOrb';
 import { UsageStatsService, DailyUsageReport } from '../services/UsageStatsService';
+import { PlanSummary } from '../onboarding/setup/Setup';
+import { useSetup } from '../onboarding/setup/store';
+import { focusMinutes } from '../onboarding/setup/model';
+import { PermissionService, type AccessSnapshot } from '../services/PermissionService';
+import { setupCopy } from '../onboarding/setup/content';
 
 interface HomeScreenProps {
   theme: ThemeColors;
@@ -14,29 +18,33 @@ interface HomeScreenProps {
 export const HomeScreen: React.FC<HomeScreenProps> = ({ theme, onNavigateTab, onOpenUrge }) => {
   const [activeChip, setActiveChip] = useState<'All' | 'Focus' | 'Insights' | 'Recovery'>('All');
   const [usage, setUsage] = useState<DailyUsageReport | null>(null);
+  const [reels, setReels] = useState<AccessSnapshot | null>(null);
+  const answers = useSetup((state) => state.answers);
+  const skipped = useSetup((state) => state.skipped);
 
   useEffect(() => {
-    loadUsage();
+    let active = true;
+    const refresh = () => { void UsageStatsService.getDailyUsage().then((report) => { if (active) setUsage(report); }); };
+    const refreshReels = () => { void PermissionService.snapshot().then((value) => { if (active) setReels(value); }).catch(() => { if (active) setReels(null); }); };
+    refresh(); refreshReels();
+    const poll = setInterval(() => { if (AppState.currentState === 'active') refreshReels(); }, 5000);
+    const listener = AppState.addEventListener('change', (state) => { if (state === 'active') { refresh(); refreshReels(); } });
+    return () => { active = false; listener.remove(); clearInterval(poll); };
   }, []);
 
-  const loadUsage = async () => {
-    const data = await UsageStatsService.getDailyUsage();
-    setUsage(data);
-  };
-
-  const totalMins = usage?.totalForegroundMinutes || 165;
+  const totalMins = Math.round(usage?.totalForegroundMinutes ?? 0);
   const hours = Math.floor(totalMins / 60);
   const mins = totalMins % 60;
-  const formattedScreenTime = `${hours}h ${mins}m`;
+  const formattedScreenTime = usage?.permissionGranted ? `${hours}h ${mins}m` : '—';
 
-  const productiveMins = usage?.productiveMinutes || 75;
-  const neutralMins = usage?.neutralMinutes || 40;
-  const distractingMins = usage?.distractingMinutes || 50;
+  const productiveMins = usage?.productiveMinutes ?? 0;
+  const neutralMins = usage?.neutralMinutes ?? 0;
+  const distractingMins = usage?.distractingMinutes ?? 0;
   const sumMins = productiveMins + neutralMins + distractingMins || 1;
 
   const prodPct = Math.round((productiveMins / sumMins) * 100);
   const neutralPct = Math.round((neutralMins / sumMins) * 100);
-  const distPct = Math.max(0, 100 - prodPct - neutralPct);
+  const distPct = Math.round((distractingMins / sumMins) * 100);
 
   return (
     <ScrollView style={[styles.container, { backgroundColor: theme.bg }]} contentContainerStyle={styles.content}>
@@ -120,13 +128,12 @@ export const HomeScreen: React.FC<HomeScreenProps> = ({ theme, onNavigateTab, on
         </TouchableOpacity>
       )}
 
-      {/* Hero: Slice Minimalist Momentum Score Card */}
-      <View style={[styles.heroCard, { backgroundColor: theme.surface }]}>
-        <Text style={[styles.cardHeaderTitle, { color: theme.textSecondary }]}>TODAY'S MOMENTUM SCORE</Text>
-        <MomentumOrb score={78} theme={theme} />
-        <Text style={[styles.heroSubtext, { color: theme.textSecondary }]}>
-          40% Attention + 35% Focus + 25% Recovery consistency
-        </Text>
+      <View style={{ marginBottom: 18 }}>
+        <TouchableOpacity accessibilityRole="button" onPress={() => useSetup.getState().edit()} style={{ marginBottom: 12 }}>
+          <Text style={[styles.greeting, { color: theme.textPrimary }]}>{skipped ? setupCopy.skipped : setupCopy.preferences}</Text>
+          <Text style={[styles.heroSubtext, { color: theme.textSecondary, textAlign: 'left' }]}>{skipped ? setupCopy.skippedDetail : setupCopy.preferencesDetail}</Text>
+        </TouchableOpacity>
+        {!skipped && <PlanSummary theme={theme} />}
       </View>
 
       {/* Metric Cards Row (Slice Large Numbers + Spotify Surface) */}
@@ -139,7 +146,7 @@ export const HomeScreen: React.FC<HomeScreenProps> = ({ theme, onNavigateTab, on
           </View>
           <Text style={[styles.metricValue, { color: theme.textPrimary }]}>{formattedScreenTime}</Text>
           <Text style={[styles.metricTrend, { color: theme.success }]}>
-            {usage?.permissionGranted ? 'Live OS Stats' : 'Baseline Sample'}
+            {usage?.permissionGranted ? 'Live OS Stats' : 'Connect Usage Access'}
           </Text>
         </View>
 
@@ -149,13 +156,13 @@ export const HomeScreen: React.FC<HomeScreenProps> = ({ theme, onNavigateTab, on
             <Ionicons name="film" size={16} color={theme.warning} />
             <Text style={[styles.metricLabel, { color: theme.textSecondary }]}>Est. Reels</Text>
           </View>
-          <Text style={[styles.metricValue, { color: theme.textPrimary }]}>38</Text>
-          <Text style={[styles.metricTrend, { color: theme.textSecondary }]}>IG: 24 · YT: 14</Text>
+          <Text style={[styles.metricValue, { color: theme.textPrimary }]}>{reels?.consent && reels.accessibility && reels.connected && !reels.paused ? reels.instagram + reels.youtube : '—'}</Text>
+          <Text style={[styles.metricTrend, { color: theme.textSecondary }]}>{reels?.paused ? 'Counting paused' : reels?.consent && reels.accessibility && reels.connected ? 'Experimental · today' : 'Connect in Profile'}</Text>
         </View>
       </View>
 
       {/* Category Proportions: Clean Slice Bar */}
-      <View style={[styles.categoryCard, { backgroundColor: theme.surface }]}>
+      {usage?.permissionGranted && totalMins > 0 && <View style={[styles.categoryCard, { backgroundColor: theme.surface }]}>
         <View style={styles.catHeader}>
           <Text style={[styles.cardHeaderTitle, { color: theme.textSecondary }]}>ATTENTION DISTRIBUTION</Text>
           <TouchableOpacity onPress={() => onNavigateTab('insights')}>
@@ -163,9 +170,9 @@ export const HomeScreen: React.FC<HomeScreenProps> = ({ theme, onNavigateTab, on
           </TouchableOpacity>
         </View>
         <View style={styles.progressBar}>
-          <View style={[styles.progressSegment, { flex: Math.max(5, prodPct), backgroundColor: theme.success }]} />
-          <View style={[styles.progressSegment, { flex: Math.max(5, neutralPct), backgroundColor: theme.warning }]} />
-          <View style={[styles.progressSegment, { flex: Math.max(5, distPct), backgroundColor: theme.danger }]} />
+          <View style={[styles.progressSegment, { flex: prodPct, backgroundColor: theme.success }]} />
+          <View style={[styles.progressSegment, { flex: neutralPct, backgroundColor: theme.warning }]} />
+          <View style={[styles.progressSegment, { flex: distPct, backgroundColor: theme.danger }]} />
         </View>
         <View style={styles.catLegend}>
           <View style={styles.legendItem}>
@@ -181,7 +188,7 @@ export const HomeScreen: React.FC<HomeScreenProps> = ({ theme, onNavigateTab, on
             <Text style={[styles.legendText, { color: theme.textSecondary }]}>Distracting {distPct}%</Text>
           </View>
         </View>
-      </View>
+      </View>}
 
       {/* Primary Spotify Play / Focus CTA Button */}
       <TouchableOpacity
@@ -191,7 +198,7 @@ export const HomeScreen: React.FC<HomeScreenProps> = ({ theme, onNavigateTab, on
       >
         <View style={styles.focusCtaLeft}>
           <Ionicons name="play" size={20} color="#000000" />
-          <Text style={styles.focusCtaTitle}>Start 25-Min Focus Block</Text>
+          <Text style={styles.focusCtaTitle}>Start {focusMinutes(answers)}-Min Focus Block</Text>
         </View>
         <Ionicons name="chevron-forward" size={18} color="#000000" />
       </TouchableOpacity>
@@ -201,16 +208,15 @@ export const HomeScreen: React.FC<HomeScreenProps> = ({ theme, onNavigateTab, on
         <View style={styles.habitHeader}>
           <View style={styles.habitHeaderLeft}>
             <Ionicons name="sparkles" size={15} color={theme.accent} />
-            <Text style={[styles.cardHeaderTitle, { color: theme.accent }]}>ACTIVE HABIT MILESTONE</Text>
+            <Text style={[styles.cardHeaderTitle, { color: theme.accent }]}>PRIVATE HABIT SPACE</Text>
           </View>
           <TouchableOpacity onPress={() => onNavigateTab('recover')}>
             <Text style={[styles.linkText, { color: theme.accent }]}>Manage →</Text>
           </TouchableOpacity>
         </View>
-        <Text style={[styles.habitTitle, { color: theme.textPrimary }]}>No Doomscrolling in Bed</Text>
+        <Text style={[styles.habitTitle, { color: theme.textPrimary }]}>A fresh start, at your pace</Text>
         <View style={styles.habitMeta}>
-          <Text style={[styles.streakCount, { color: theme.textPrimary }]}>🔥 6-Day Streak</Text>
-          <Text style={[styles.habitBest, { color: theme.textSecondary }]}>Best: 14 days · Total: 28 days</Text>
+          <Text style={[styles.habitBest, { color: theme.textSecondary }]}>Choose a private goal or try an urge reset.</Text>
         </View>
       </View>
     </ScrollView>

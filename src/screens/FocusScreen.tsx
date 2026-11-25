@@ -3,43 +3,38 @@ import { View, Text, StyleSheet, ScrollView, TouchableOpacity } from 'react-nati
 import { Ionicons } from '@expo/vector-icons';
 import { ThemeColors, Fonts } from '../theme/tokens';
 import { FocusSessionLog } from '../types';
+import { useSetup } from '../onboarding/setup/store';
+import { focusMinutes } from '../onboarding/setup/model';
 
 interface FocusScreenProps {
   theme: ThemeColors;
 }
 
 export const FocusScreen: React.FC<FocusScreenProps> = ({ theme }) => {
-  const [selectedPreset, setSelectedPreset] = useState(25);
-  const [secondsLeft, setSecondsLeft] = useState(25 * 60);
+  const initialMinutes = focusMinutes(useSetup((state) => state.answers));
+  const [selectedPreset, setSelectedPreset] = useState(initialMinutes);
+  const [secondsLeft, setSecondsLeft] = useState(initialMinutes * 60);
   const [isActive, setIsActive] = useState(false);
-  const [sessionLogs, setSessionLogs] = useState<FocusSessionLog[]>([
-    { id: '1', mode: 'pomodoro', durationMinutes: 25, completedAt: 'Today, 11:30 AM', tag: 'Deep Work' },
-    { id: '2', mode: 'pomodoro', durationMinutes: 25, completedAt: 'Today, 02:15 PM', tag: 'Reading' },
-  ]);
+  const [sessionLogs, setSessionLogs] = useState<FocusSessionLog[]>([]);
 
   useEffect(() => {
-    let interval: any = null;
-    if (isActive && secondsLeft > 0) {
-      interval = setInterval(() => {
-        setSecondsLeft((s) => s - 1);
-      }, 1000);
-    } else if (secondsLeft === 0 && isActive) {
-      setIsActive(false);
-      setSessionLogs((prev) => [
-        {
-          id: Date.now().toString(),
-          mode: 'pomodoro',
-          durationMinutes: selectedPreset,
-          completedAt: 'Just now',
-          tag: 'Focus Session',
-        },
-        ...prev,
-      ]);
-    }
-    return () => clearInterval(interval);
+    if (!isActive || secondsLeft <= 0) return;
+    const timer = setTimeout(() => {
+      const remaining = secondsLeft - 1;
+      setSecondsLeft(remaining);
+      if (remaining === 0) {
+        setIsActive(false);
+        setSessionLogs((prev) => [{
+          id: Date.now().toString(), mode: 'pomodoro',
+          durationMinutes: selectedPreset, completedAt: 'Just now', tag: 'Focus Session',
+        }, ...prev]);
+      }
+    }, 1000);
+    return () => clearTimeout(timer);
   }, [isActive, secondsLeft, selectedPreset]);
 
   const toggleTimer = () => {
+    if (!isActive && secondsLeft === 0) setSecondsLeft(selectedPreset * 60);
     setIsActive(!isActive);
   };
 
@@ -62,7 +57,7 @@ export const FocusScreen: React.FC<FocusScreenProps> = ({ theme }) => {
     <ScrollView style={[styles.container, { backgroundColor: theme.bg }]} contentContainerStyle={styles.content}>
       <Text style={[styles.title, { color: theme.textPrimary }]}>Focus Engine</Text>
       <Text style={[styles.subtitle, { color: theme.textSecondary }]}>
-        Deterministic monotonic timer · Offline-first state persistence
+        One session. One thing that matters to you.
       </Text>
 
       {/* Spotify Signature Preset Chips */}
@@ -130,7 +125,7 @@ export const FocusScreen: React.FC<FocusScreenProps> = ({ theme }) => {
       </View>
 
       {/* Session History */}
-      <Text style={[styles.sectionHeading, { color: theme.textPrimary }]}>Today's Completed Blocks</Text>
+      <Text style={[styles.sectionHeading, { color: theme.textPrimary }]}>Today’s Completed Blocks</Text>
       <View style={styles.historyList}>
         {sessionLogs.map((log) => (
           <View key={log.id} style={[styles.historyRow, { backgroundColor: theme.surface }]}>

@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { View, StyleSheet, SafeAreaView, Platform } from 'react-native';
+import { View, StyleSheet, SafeAreaView, Platform, useColorScheme } from 'react-native';
 import { StatusBar } from 'expo-status-bar';
 import { useFonts } from 'expo-font';
 import { MidnightDark, ArcticLight, ThemeColors } from './src/theme/tokens';
@@ -12,6 +12,7 @@ import { ProfileScreen } from './src/screens/ProfileScreen';
 import { UrgeModal } from './src/components/UrgeModal';
 import { LaunchSplash } from './src/components/LaunchSplash';
 import { SpotifyTabBar } from './src/components/SpotifyTabBar';
+import { useSetup } from './src/onboarding/setup/store';
 
 export default function App() {
   return <BrainSpaceHome />;
@@ -27,18 +28,20 @@ export function BrainSpaceHome({ afterSplash = false }: { afterSplash?: boolean 
   });
 
   const [currentTab, setCurrentTab] = useState<TabType>('home');
-  const [themeMode, setThemeMode] = useState<'MidnightDark' | 'ArcticLight'>('MidnightDark');
+  const appearance = useSetup((state) => state.answers.theme?.[0]) ?? 'dark';
+  const systemScheme = useColorScheme();
+  const themeMode = (appearance === 'system' ? systemScheme !== 'light' : appearance !== 'light') ? 'MidnightDark' : 'ArcticLight';
   const [urgeModalVisible, setUrgeModalVisible] = useState(false);
   const [showSplash, setShowSplash] = useState(!afterSplash);
 
   const theme: ThemeColors = themeMode === 'MidnightDark' ? MidnightDark : ArcticLight;
 
   const toggleTheme = () => {
-    setThemeMode((prev) => (prev === 'MidnightDark' ? 'ArcticLight' : 'MidnightDark'));
+    useSetup.getState().answer('theme', [themeMode === 'MidnightDark' ? 'light' : 'dark']);
   };
 
   return (
-    <View style={styles.root}>
+    <View style={[styles.root, { backgroundColor: theme.bg }]}>
       <SafeAreaView style={[styles.safeArea, { backgroundColor: theme.bg }]}>
         <StatusBar style={themeMode === 'MidnightDark' ? 'light' : 'dark'} />
 

@@ -1,8 +1,11 @@
 import React, { useState, useEffect } from 'react';
-import { View, Text, StyleSheet, ScrollView, TouchableOpacity, Alert } from 'react-native';
+import { AppState, View, Text, StyleSheet, ScrollView, TouchableOpacity, Alert } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import { ThemeColors, Fonts } from '../theme/tokens';
 import { UsageStatsService } from '../services/UsageStatsService';
+import { useSetup } from '../onboarding/setup/store';
+import { PermissionSettingsButton } from '../onboarding/permissions/PermissionSetup';
+import { setupCopy } from '../onboarding/setup/content';
 
 interface ProfileScreenProps {
   theme: ThemeColors;
@@ -14,13 +17,11 @@ export const ProfileScreen: React.FC<ProfileScreenProps> = ({ theme, themeName, 
   const [hasUsagePermission, setHasUsagePermission] = useState<boolean>(false);
 
   useEffect(() => {
-    checkPerm();
+    const refresh = () => { void UsageStatsService.checkPermission().then(setHasUsagePermission); };
+    refresh();
+    const listener = AppState.addEventListener('change', (state) => { if (state === 'active') refresh(); });
+    return () => listener.remove();
   }, []);
-
-  const checkPerm = async () => {
-    const granted = await UsageStatsService.checkPermission();
-    setHasUsagePermission(granted);
-  };
 
   const handleGrantUsage = async () => {
     await UsageStatsService.requestPermission();
@@ -33,6 +34,20 @@ export const ProfileScreen: React.FC<ProfileScreenProps> = ({ theme, themeName, 
         Privacy audit, system health diagnostics & backend connectivity
       </Text>
 
+      <TouchableOpacity accessibilityRole="button" onPress={() => useSetup.getState().edit()}
+        style={[styles.card, { backgroundColor: theme.surface, padding: 18, marginBottom: 18 }]}>
+        <View style={styles.rowLeft}>
+          <Ionicons name="compass-outline" size={24} color={theme.accent} />
+          <View style={{ flex: 1 }}>
+            <Text style={[styles.rowLabel, { color: theme.textPrimary }]}>{setupCopy.preferences}</Text>
+            <Text style={[styles.rowDesc, { color: theme.textSecondary }]}>{setupCopy.preferencesDetail}</Text>
+          </View>
+          <Ionicons name="chevron-forward" size={18} color={theme.textSecondary} />
+        </View>
+      </TouchableOpacity>
+
+      <PermissionSettingsButton theme={theme} />
+
       {/* Appearance Section */}
       <Text style={[styles.sectionTitle, { color: theme.textSecondary }]}>APPEARANCE</Text>
       <View style={[styles.card, { backgroundColor: theme.surface }]}>
@@ -42,7 +57,7 @@ export const ProfileScreen: React.FC<ProfileScreenProps> = ({ theme, themeName, 
             <View>
               <Text style={[styles.rowLabel, { color: theme.textPrimary }]}>Active Theme</Text>
               <Text style={[styles.rowDesc, { color: theme.textSecondary }]}>
-                {themeName === 'MidnightDark' ? 'Spotify Dark + Slice Minimal' : 'Arctic Light'}
+                {themeName === 'MidnightDark' ? 'Midnight' : 'Arctic Light'}
               </Text>
             </View>
           </View>
@@ -83,19 +98,6 @@ export const ProfileScreen: React.FC<ProfileScreenProps> = ({ theme, themeName, 
             color={hasUsagePermission ? theme.success : theme.warning}
           />
         </TouchableOpacity>
-
-        <View style={[styles.divider, { backgroundColor: 'rgba(255,255,255,0.06)' }]} />
-
-        <View style={styles.diagRow}>
-          <View style={styles.diagLeft}>
-            <Ionicons name="eye" size={18} color={theme.warning} />
-            <View>
-              <Text style={[styles.diagLabel, { color: theme.textPrimary }]}>Short-Form Feed Detector</Text>
-              <Text style={[styles.diagStatus, { color: theme.warning }]}>Phase 0 Gated Alpha</Text>
-            </View>
-          </View>
-          <Ionicons name="shield-checkmark" size={20} color={theme.warning} />
-        </View>
 
         <View style={[styles.divider, { backgroundColor: 'rgba(255,255,255,0.06)' }]} />
 
