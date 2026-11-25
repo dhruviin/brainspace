@@ -9,7 +9,7 @@ import { useStoryTimer } from '../hooks/useStoryTimer';
 import { shape } from '../shapes';
 import { useStory } from '../store/story';
 import { copy } from '../strings';
-import { timing } from '../theme';
+import { face, ink, timing } from '../theme';
 const amounts = [10, 40, 70];
 export function Reward() {
   const {
@@ -112,7 +112,15 @@ export function Offer() {
           }}
         >
           <Text style={styles.note}>{copy.giftSaved}</Text>
-          <TypewriterCaption text={'{' + copy.off(gift) + '}'} />
+          <Text
+            style={{
+              fontFamily: face.extraBold,
+              color: ink.accent,
+              fontSize: 32,
+            }}
+          >
+            {copy.off(gift)}
+          </Text>
         </View>
       )}
       <Text

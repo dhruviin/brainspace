@@ -121,20 +121,22 @@ export function TypewriterCaption({
       style={{ alignSelf: 'stretch' }}
     >
       {previous && (
-        <Animated.Text
-          key={previous}
-          entering={FadeInUp.duration(motion ? 300 : 0)}
-          style={{
-            color: ink.textPrimary,
-            opacity: 0.24,
-            textAlign: align,
-            fontFamily: face.medium,
-            fontSize: 15,
-            marginBottom: 12,
-          }}
-        >
-          {plain(previous)}
-        </Animated.Text>
+        <View style={{ opacity: 0.24 }}>
+          <Animated.Text
+            key={previous}
+            entering={FadeInUp.duration(motion ? 300 : 0)}
+            style={{
+              color: ink.textPrimary,
+
+              textAlign: align,
+              fontFamily: face.medium,
+              fontSize: 15,
+              marginBottom: 12,
+            }}
+          >
+            {plain(previous)}
+          </Animated.Text>
+        </View>
       )}
       <View
         importantForAccessibility="no-hide-descendants"
@@ -145,7 +147,10 @@ export function TypewriterCaption({
         }}
       >
         {words.map((w, i) => (
-          <View key={text + i} style={{ marginRight: w.space ? 4 : 0 }}>
+          <View
+            key={text + i}
+            style={{ marginRight: w.space ? (small ? 4.5 : 6) : 0 }}
+          >
             {motion ? (
               <Word
                 {...w}

@@ -84,7 +84,7 @@ export const copy = {
   openOffer: 'View my offer',
   offerTitle: 'A little more room.',
   offerBody:
-    'Your introductory offer is saved on this device. Paid plans are coming later. You can use BrainSpace today.',
+    'Your introductory offer is saved on this device. Paid plans are coming later. Start free with usage insights, focus sessions and an urge reset.',
   home: 'Open BrainSpace',
   giftSaved: 'Your saved offer',
 };

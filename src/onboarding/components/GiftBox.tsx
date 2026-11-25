@@ -10,7 +10,7 @@ import Animated, {
   withTiming,
 } from 'react-native-reanimated';
 import { copy } from '../strings';
-import { face, ink, timing } from '../theme';
+import { face, timing } from '../theme';
 import { useMotion } from '../hooks/useMotion';
 
 const ribbon = '#CAD5CF',

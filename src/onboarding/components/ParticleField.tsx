@@ -5,14 +5,13 @@ import {
   Canvas,
   Group,
   Skia,
-  useRectBuffer,
-  useRSXformBuffer,
   vec,
 } from '@shopify/react-native-skia';
 import Animated, {
   cancelAnimation,
   Easing,
   useAnimatedStyle,
+  useAnimatedReaction,
   useDerivedValue,
   useSharedValue,
   withRepeat,
@@ -154,32 +153,33 @@ export function ParticleField({
     return () => cancelAnimation(cycle);
   }, [cycle, mode, motion]);
   const shade = useDerivedValue(() => Math.round(t.value * (shades - 1)));
-  const sprites = useRectBuffer(count, (r, i) => {
-    'worklet';
-    const k = i * stride + 3;
-    r.setXYWH(
-      shade.value * cell,
-      (from.value[k] * palette.length + to.value[k]) * cell,
-      cell,
-      cell,
-    );
+  // Read each shared value once per frame. Only the nine tint stops update the sprite rectangles.
+  const spriteSeed=useMemo(()=>Array.from({length:count},()=>Skia.XYWHRect(0,0,cell,cell)),[count]);
+  const transformSeed=useMemo(()=>Array.from({length:count},()=>Skia.RSXform(0,0,0,0)),[count]);
+  const sprites=useSharedValue(spriteSeed),transforms=useSharedValue(transformSeed);
+  useAnimatedReaction(()=>({shade:shade.value,a:from.value,b:to.value}),({shade:level,a,b})=>{
+    sprites.modify(items=>{
+      'worklet';
+      for(let i=0;i<items.length;i++){
+        const k=i*stride+3;
+        items[i].setXYWH(level*cell,(a[k]*palette.length+b[k])*cell,cell,cell);
+      }
+      return items;
+    },true);
   });
-  const transforms = useRSXformBuffer(count, (out, i) => {
-    'worklet';
-    const k = i * stride,
-      p = t.value,
-      a = from.value,
-      b = to.value;
-    const z = (a[k + 2] + (b[k + 2] - a[k + 2]) * p) / 3.2;
-    let x = a[k] + (b[k] - a[k]) * p,
-      y = a[k + 1] + (b[k + 1] - a[k + 1]) * p;
-    if (mode === 'swirl' && motion) {
-      const arc = 4 * p * (1 - p) * 0.55;
-      x -= (a[k + 1] - 128) * arc;
-      y += (a[k] - 128) * arc;
-    }
-    if (mode === 'fall' && motion) y = a[k + 1] + (b[k + 1] - a[k + 1]) * p * p;
-    out.set(z, 0, x - 4 * z, y - 4 * z);
+  useAnimatedReaction(()=>({p:t.value,a:from.value,b:to.value}),({p,a,b})=>{
+    const curve=mode==='swirl'&&motion?4*p*(1-p)*.55:0;
+    transforms.modify(items=>{
+      'worklet';
+      for(let i=0;i<items.length;i++){
+        const k=i*stride,z=(a[k+2]+(b[k+2]-a[k+2])*p)/3.2;
+        let x=a[k]+(b[k]-a[k])*p,y=a[k+1]+(b[k+1]-a[k+1])*p;
+        if(curve){x-=(a[k+1]-128)*curve;y+=(a[k]-128)*curve;}
+        if(mode==='fall'&&motion)y=a[k+1]+(b[k+1]-a[k+1])*p*p;
+        items[i].set(z,0,x-4*z,y-4*z);
+      }
+      return items;
+    },true);
   });
   const animated = useAnimatedStyle(() => ({
     opacity: motion ? 1 : 0.38 + 0.62 * t.value,

@@ -1,6 +1,11 @@
 import React, { useCallback, useEffect, useState } from 'react';
 import { Text, View } from 'react-native';
-import * as Notifications from 'expo-notifications';
+import {
+  AndroidImportance,
+  getPermissionsAsync,
+  setNotificationChannelAsync,
+  requestPermissionsAsync,
+} from 'expo-notifications';
 import Animated, { FadeIn, ZoomIn } from 'react-native-reanimated';
 import { ParticleField } from '../components/ParticleField';
 import { Mascot } from '../components/Controls';
@@ -25,13 +30,13 @@ export function Intro() {
       if (!s.prompted) {
         s.markPrompt();
         try {
-          const existing = await Notifications.getPermissionsAsync();
+          const existing = await getPermissionsAsync();
           if (!existing.granted && existing.canAskAgain) {
-            await Notifications.setNotificationChannelAsync('focus-reminders', {
+            await setNotificationChannelAsync('focus-reminders', {
               name: copy.channel,
-              importance: Notifications.AndroidImportance.DEFAULT,
+              importance: AndroidImportance.DEFAULT,
             });
-            await Notifications.requestPermissionsAsync();
+            await requestPermissionsAsync();
           }
         } catch {
           /* Android without notification support can still complete the story. */
@@ -44,7 +49,7 @@ export function Intro() {
       clearTimeout(timer);
     };
   }, []);
-  const advance = useCallback(() => setPhase((p) => Math.min(4, p + 1)), []);
+  const advance = useCallback(() => setPhase(Math.min(4, phase + 1)), [phase]);
   useStoryTimer(
     phase > 0 && phase < 4,
     phase === 1 ? 900 : timing.line,

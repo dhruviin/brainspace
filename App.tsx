@@ -1,7 +1,6 @@
-import React, { useCallback, useEffect, useState } from 'react';
+import React, { useState } from 'react';
 import { View, StyleSheet, SafeAreaView, Platform } from 'react-native';
 import { StatusBar } from 'expo-status-bar';
-import * as SplashScreen from 'expo-splash-screen';
 import { useFonts } from 'expo-font';
 import { MidnightDark, ArcticLight, ThemeColors } from './src/theme/tokens';
 import { TabType } from './src/types';
@@ -14,8 +13,12 @@ import { UrgeModal } from './src/components/UrgeModal';
 import { LaunchSplash } from './src/components/LaunchSplash';
 import { SpotifyTabBar } from './src/components/SpotifyTabBar';
 
-export default function App({ afterSplash = false }: { afterSplash?: boolean } = {}) {
-  const [fontsLoaded] = useFonts({
+export default function App() {
+  return <BrainSpaceHome />;
+}
+
+export function BrainSpaceHome({ afterSplash = false }: { afterSplash?: boolean } = {}) {
+  useFonts({
     'Poppins-Regular': require('./assets/fonts/Poppins-Regular.ttf'),
     'Poppins-Medium': require('./assets/fonts/Poppins-Medium.ttf'),
     'Poppins-SemiBold': require('./assets/fonts/Poppins-SemiBold.ttf'),

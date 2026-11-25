@@ -12,7 +12,7 @@ import { ink, timing } from '../theme';
 
 const forms: ShapeName[] = ['spinner', 'ring', 'week', 'month', 'disc'];
 export function Numbers() {
-  const { answers, limit, beat, next } = useStory(),
+  const { answers, limit, beat } = useStory(),
     p = projection(answers, limit),
     size = useArtSize();
   const advance = useCallback(() => {
