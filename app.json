@@ -58,7 +58,14 @@
           ]
         }
       ],
-      "expo-router"
+      "expo-router",
+      [
+        "expo-video",
+        {
+          "supportsPictureInPicture": true,
+          "supportsBackgroundPlayback": false
+        }
+      ]
     ]
   }
 }
