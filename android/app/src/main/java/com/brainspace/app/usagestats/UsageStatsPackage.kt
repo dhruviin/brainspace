@@ -7,7 +7,7 @@ import com.facebook.react.uimanager.ViewManager
 
 class UsageStatsPackage : ReactPackage {
     override fun createNativeModules(reactContext: ReactApplicationContext): List<NativeModule> {
-        return listOf(UsageStatsModule(reactContext))
+        return listOf(UsageStatsModule(reactContext), com.brainspace.app.reels.PermissionModule(reactContext))
     }
 
     override fun createViewManagers(reactContext: ReactApplicationContext): List<ViewManager<*, *>> {

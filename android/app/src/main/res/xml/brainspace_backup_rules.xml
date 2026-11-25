@@ -1,0 +1,7 @@
+<?xml version="1.0" encoding="utf-8"?>
+<full-backup-content>
+  <include domain="sharedpref" path="."/>
+  <exclude domain="sharedpref" path="SecureStore"/>
+  <exclude domain="sharedpref" path="brainspace_reels_private.xml"/>
+  <exclude domain="sharedpref" path="brainspace_permission_setup.xml"/>
+</full-backup-content>

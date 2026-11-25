@@ -1,0 +1,4 @@
+<resources>
+    <string name="brainspace_accessibility_label">BrainSpace reel estimates</string>
+    <string name="brainspace_accessibility_description">Optional experimental reel estimates for Instagram and YouTube only. BrainSpace checks feed view identifiers and page scroll positions on this device. It does not read messages, captions, passwords or media, take screenshots, or control your phone. Only daily counts are saved locally. Pause, choose apps or erase counts in BrainSpace Profile. You can turn this service off anytime here.</string>
+</resources>
