@@ -55,7 +55,7 @@ test('a focus-only journey does not ask about reels or sensitive habits', () => 
   const journey = setupSteps({ goals: ['focus'], distractions: ['gaming'] });
   assert.equal(journey.includes('reels'), false);
   assert.equal(journey.includes('habits'), false);
-  assert.deepEqual(journey.slice(-3), ['theme', 'access', 'plan']);
+  assert.deepEqual(journey.slice(-2), ['access', 'plan']);
   assert.equal(new Set(journey).size, journey.length);
 });
 
@@ -111,7 +111,6 @@ test('sensitive choices and custom labels never enter AsyncStorage', async () =>
   const value = {
     ...defaults,
     step: 'habits',
-    adultConfirmed: true,
     answers: { goals: ['habits'], habits: ['adult', 'custom'] },
     customHabit: 'My private label',
   };
@@ -132,12 +131,10 @@ test('draft writes are ordered before completion and resume includes the latest 
   const { persistence } = storage();
   const first = persistence.save({
     ...defaults,
-    adultConfirmed: true,
     step: 'screen',
   });
   const final = persistence.save({
     ...defaults,
-    adultConfirmed: true,
     step: 'plan',
     completed: true,
     answers: { focus: ['45'] },
@@ -232,11 +229,9 @@ test('the actual store completes an adaptive journey, resumes, and supports edit
   useSetup.getState().next();
   assert.equal(
     useSetup.getState().step,
-    'intro',
-    'age confirmation precedes collecting answers',
+    'goals',
+    'welcome starts the journey directly',
   );
-  useSetup.getState().confirmAdult();
-  useSetup.getState().next();
   useSetup.getState().answer('goals', ['habits', 'focus']);
   useSetup.getState().next();
   useSetup.getState().answer('distractions', ['shorts']);
@@ -257,10 +252,21 @@ test('the actual store completes an adaptive journey, resumes, and supports edit
   assert.equal(focusMinutes(useSetup.getState().answers), 45);
 });
 
+test('skipped setup can still be saved without collecting answers', async () => {
+  const { useSetup, local } = setupStore();
+  await useSetup.getState().hydrate();
+  await useSetup.getState().finish(true);
+  assert.equal(useSetup.getState().completed, true);
+  assert.equal(useSetup.getState().skipped, true);
+  const saved = JSON.parse(local.data.get(SETUP_KEY));
+  assert.equal(saved.completed, true);
+  assert.deepEqual(saved.answers, {});
+  assert.equal('adultConfirmed' in saved, false);
+});
+
 test('store finish waits for durable storage and exposes failure for retry', async () => {
   const { useSetup, local } = setupStore();
   await useSetup.getState().hydrate();
-  useSetup.getState().confirmAdult();
   local.setItem = async () => {
     throw new Error('disk full');
   };
@@ -273,17 +279,15 @@ test('store finish waits for durable storage and exposes failure for retry', asy
 test('late taps cannot overwrite the completed snapshot while it is saving', async () => {
   const { useSetup, local } = setupStore();
   await useSetup.getState().hydrate();
-  useSetup.getState().confirmAdult();
   useSetup.getState().answer('focus', ['45']);
   const finishing = useSetup.getState().finish();
   useSetup.getState().go('goals');
   useSetup.getState().answer('focus', ['60']);
-  useSetup.getState().confirmAdult();
   await finishing;
   assert.equal(useSetup.getState().completed, true);
   assert.equal(focusMinutes(useSetup.getState().answers), 45);
   assert.equal(JSON.parse(local.data.get(SETUP_KEY)).completed, true);
-  assert.equal(JSON.parse(local.data.get(SETUP_KEY)).adultConfirmed, true);
+  assert.deepEqual(JSON.parse(local.data.get(SETUP_KEY)).answers.focus, ['45']);
 });
 
 test('a build without the secure native module can load setup safely', async () => {

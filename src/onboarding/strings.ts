@@ -134,11 +134,17 @@ export const questions: Partial<Record<Step, Question>> = {
     multi: true,
   },
   dream: {
-    prompt: 'Do you have a {dream or interest} you want to grow?',
-    labels: ['Yes, I have a dream', 'Yes, I have an interest'],
+    prompt: 'What do you want {more time for}?',
+    labels: [
+      'My studies or career',
+      'Fitness & health',
+      'Creative hobbies & passion',
+      'Personal goals & dreams',
+      'Just a calm, clear mind',
+    ],
   },
   time: {
-    prompt: 'Do you get enough time to {grow your interest}?',
+    prompt: 'Do you get enough time for {what matters to you}?',
     labels: [
       'No, not at all',
       'I don’t know where my time goes',
@@ -146,7 +152,7 @@ export const questions: Partial<Record<Step, Question>> = {
     ],
   },
   helps: {
-    prompt: 'Does watching reels help {your interest grow}?',
+    prompt: 'Does watching reels help you {reach your goals}?',
     labels: ['Not at all', 'Yes, a little'],
   },
   daily: {

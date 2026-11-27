@@ -28,17 +28,13 @@ export function BrainSpaceHome({ afterSplash = false }: { afterSplash?: boolean 
   });
 
   const [currentTab, setCurrentTab] = useState<TabType>('home');
-  const appearance = useSetup((state) => state.answers.theme?.[0]) ?? 'dark';
-  const systemScheme = useColorScheme();
-  const themeMode = (appearance === 'system' ? systemScheme !== 'light' : appearance !== 'light') ? 'MidnightDark' : 'ArcticLight';
+  const themeMode = 'MidnightDark';
   const [urgeModalVisible, setUrgeModalVisible] = useState(false);
   const [showSplash, setShowSplash] = useState(!afterSplash);
 
-  const theme: ThemeColors = themeMode === 'MidnightDark' ? MidnightDark : ArcticLight;
+  const theme: ThemeColors = MidnightDark;
 
-  const toggleTheme = () => {
-    useSetup.getState().answer('theme', [themeMode === 'MidnightDark' ? 'light' : 'dark']);
-  };
+  const toggleTheme = () => {};
 
   return (
     <View style={[styles.root, { backgroundColor: theme.bg }]}>

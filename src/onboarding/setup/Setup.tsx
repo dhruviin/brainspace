@@ -1,4 +1,5 @@
-import React, { useEffect, useRef, useState } from 'react';
+import React, { useEffect, useMemo, useRef, useState } from 'react';
+import { router } from 'expo-router';
 import {
   ActivityIndicator,
   Animated,
@@ -6,6 +7,7 @@ import {
   Easing,
   Image,
   KeyboardAvoidingView,
+  PanResponder,
   Platform,
   Pressable,
   ScrollView,
@@ -218,8 +220,11 @@ function Heading({
 function Welcome({ theme }: { theme: ThemeColors }) {
   const motion = useMotion(),
     { height } = useWindowDimensions(),
-    [clock] = useState(() => new Animated.Value(0));
+    [clock] = useState(() => new Animated.Value(0)),
+    [eyesOpen] = useState(() => new Animated.Value(1));
   useEffect(() => {
+    clock.setValue(0);
+    eyesOpen.setValue(1);
     if (!motion) return;
     const animation = Animated.loop(
       Animated.sequence([
@@ -239,9 +244,33 @@ function Welcome({ theme }: { theme: ThemeColors }) {
         }),
       ]),
     );
+    const blink = Animated.loop(
+      Animated.sequence([
+        Animated.delay(3400),
+        Animated.timing(eyesOpen, {
+          toValue: 0,
+          duration: 90,
+          easing: Easing.inOut(Easing.quad),
+          useNativeDriver: true,
+          isInteraction: false,
+        }),
+        Animated.delay(60),
+        Animated.timing(eyesOpen, {
+          toValue: 1,
+          duration: 140,
+          easing: Easing.out(Easing.quad),
+          useNativeDriver: true,
+          isInteraction: false,
+        }),
+      ]),
+    );
     animation.start();
-    return () => animation.stop();
-  }, [clock, motion]);
+    blink.start();
+    return () => {
+      animation.stop();
+      blink.stop();
+    };
+  }, [clock, eyesOpen, motion]);
   return (
     <>
       <View
@@ -267,6 +296,48 @@ function Welcome({ theme }: { theme: ThemeColors }) {
             style={{ width: 240, height: 240 }}
             resizeMode="contain"
           />
+          {/* Match the eye positions and fill of the bundled 240-point mascot. */}
+          {[101, 129].map((left) => (
+            <View
+              key={left}
+              pointerEvents="none"
+              accessible={false}
+              style={[s.blinkEye, { left }]}
+            >
+              <Animated.View
+                style={[
+                  s.eyelid,
+                  {
+                    top: 0,
+                    transform: [
+                      {
+                        translateY: eyesOpen.interpolate({
+                          inputRange: [0, 1],
+                          outputRange: [0, -8],
+                        }),
+                      },
+                    ],
+                  },
+                ]}
+              />
+              <Animated.View
+                style={[
+                  s.eyelid,
+                  {
+                    bottom: 0,
+                    transform: [
+                      {
+                        translateY: eyesOpen.interpolate({
+                          inputRange: [0, 1],
+                          outputRange: [0, 8],
+                        }),
+                      },
+                    ],
+                  },
+                ]}
+              />
+            </View>
+          ))}
         </Animated.View>
       </View>
       <Heading
@@ -330,7 +401,6 @@ function QuestionBody({ id, theme }: { id: QuestionId; theme: ThemeColors }) {
   return (
     <>
       <Heading title={q.title} detail={q.detail} theme={theme} />
-      {id === 'theme' && <ThemePreview theme={theme} />}
       <View style={s.spread}>
         <Text style={[s.selectionLabel, { color: theme.textSecondary }]}>
           {q.max ? copy.chooseTwo : q.multi ? copy.chooseMany : copy.chooseOne}
@@ -467,19 +537,299 @@ export function PlanSummary({ theme }: { theme: ThemeColors }) {
   );
 }
 
+function SlideToEnter({
+  theme,
+  busy,
+  label = 'Slide to commit & enter →',
+  onSlideComplete,
+}: {
+  theme: ThemeColors;
+  busy?: boolean;
+  label?: string;
+  onSlideComplete: () => void;
+}) {
+  const [trackWidth, setTrackWidth] = useState(0);
+  const dragX = useRef(new Animated.Value(0)).current;
+  const completedRef = useRef(false);
+  const maxSlideRef = useRef(0);
+  const busyRef = useRef(busy);
+  busyRef.current = busy;
+
+  const thumbSize = 48;
+  const padding = 5;
+  const maxSlide = Math.max(0, trackWidth - thumbSize - padding * 2);
+  maxSlideRef.current = maxSlide;
+
+  const panResponder = useMemo(
+    () =>
+      PanResponder.create({
+        onStartShouldSetPanResponder: () =>
+          !busyRef.current && !completedRef.current,
+        onMoveShouldSetPanResponder: (_, gesture) =>
+          !busyRef.current &&
+          !completedRef.current &&
+          Math.abs(gesture.dx) > 1,
+        onPanResponderGrant: () => {
+          void Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light).catch(
+            () => undefined,
+          );
+        },
+        onPanResponderTerminationRequest: () => false,
+        onPanResponderMove: (_, gesture) => {
+          if (completedRef.current) return;
+          const limit = maxSlideRef.current;
+          if (limit <= 0) return;
+          const bounded = Math.max(0, Math.min(gesture.dx, limit));
+          dragX.setValue(bounded);
+        },
+        onPanResponderRelease: (evt, gesture) => {
+          if (completedRef.current) return;
+          const limit = maxSlideRef.current;
+          if (limit <= 0) return;
+
+          const isSlideSuccess =
+            gesture.dx >= limit * 0.45 ||
+            (gesture.dx > limit * 0.2 && gesture.vx > 0.4);
+          const isTapNearEnd =
+            Math.abs(gesture.dx) < 8 &&
+            evt.nativeEvent.locationX >= limit * 0.55;
+
+          if (isSlideSuccess || isTapNearEnd) {
+            completedRef.current = true;
+            void Haptics.notificationAsync(
+              Haptics.NotificationFeedbackType.Success,
+            ).catch(() => undefined);
+            Animated.timing(dragX, {
+              toValue: limit,
+              duration: 150,
+              easing: Easing.out(Easing.cubic),
+              useNativeDriver: false,
+            }).start(() => {
+              onSlideComplete();
+            });
+          } else {
+            void Haptics.selectionAsync().catch(() => undefined);
+            Animated.spring(dragX, {
+              toValue: 0,
+              bounciness: 6,
+              speed: 16,
+              useNativeDriver: false,
+            }).start();
+          }
+        },
+        onPanResponderTerminate: () => {
+          if (!completedRef.current) {
+            Animated.spring(dragX, {
+              toValue: 0,
+              bounciness: 6,
+              speed: 16,
+              useNativeDriver: false,
+            }).start();
+          }
+        },
+      }),
+    [dragX, onSlideComplete],
+  );
+
+  const textOpacity = dragX.interpolate({
+    inputRange: [0, maxSlide > 0 ? maxSlide * 0.45 : 1],
+    outputRange: [1, 0.05],
+    extrapolate: 'clamp',
+  });
+
+  const fillWidth = dragX.interpolate({
+    inputRange: [0, maxSlide > 0 ? maxSlide : 1],
+    outputRange: [
+      thumbSize + padding * 2,
+      trackWidth || thumbSize + padding * 2,
+    ],
+    extrapolate: 'clamp',
+  });
+
+  return (
+    <View
+      onLayout={(e) => {
+        const w = e.nativeEvent.layout.width;
+        if (w > 0) setTrackWidth(w);
+      }}
+      {...panResponder.panHandlers}
+      style={[
+        s.sliderTrack,
+        {
+          backgroundColor: theme.surface,
+          borderColor: theme.border,
+        },
+      ]}
+    >
+      <Animated.View
+        style={[
+          s.sliderFill,
+          {
+            width: fillWidth,
+            backgroundColor: `${theme.accent}25`,
+          },
+        ]}
+      />
+      <Animated.Text
+        style={[
+          s.sliderText,
+          {
+            color: theme.textSecondary,
+            opacity: textOpacity,
+          },
+        ]}
+      >
+        {busy ? 'Entering BrainSpace…' : label}
+      </Animated.Text>
+      <Animated.View
+        style={[
+          s.sliderThumb,
+          {
+            backgroundColor: theme.accent,
+            transform: [{ translateX: dragX }],
+          },
+        ]}
+      >
+        <Ionicons name="arrow-forward" size={24} color={theme.bg} />
+      </Animated.View>
+    </View>
+  );
+}
+
+function PlanMascot({ theme }: { theme: ThemeColors }) {
+  const motion = useMotion();
+  const [floatAnim] = useState(() => new Animated.Value(0));
+
+  useEffect(() => {
+    if (!motion) return;
+    const loop = Animated.loop(
+      Animated.sequence([
+        Animated.timing(floatAnim, {
+          toValue: 1,
+          duration: 1600,
+          easing: Easing.inOut(Easing.quad),
+          useNativeDriver: true,
+        }),
+        Animated.timing(floatAnim, {
+          toValue: 0,
+          duration: 1600,
+          easing: Easing.inOut(Easing.quad),
+          useNativeDriver: true,
+        }),
+      ]),
+    );
+    loop.start();
+    return () => loop.stop();
+  }, [floatAnim, motion]);
+
+  const translateY = floatAnim.interpolate({
+    inputRange: [0, 1],
+    outputRange: [2, -6],
+  });
+
+  const scale = floatAnim.interpolate({
+    inputRange: [0, 1],
+    outputRange: [1, 1.04],
+  });
+
+  return (
+    <View style={s.planMascotWrap}>
+      <View
+        style={[
+          s.planMascotGlow,
+          {
+            backgroundColor: `${theme.accent}14`,
+            borderColor: `${theme.accent}30`,
+          },
+        ]}
+      />
+      <Animated.View
+        style={{
+          transform: [{ translateY }, { scale }],
+        }}
+      >
+        <Image
+          source={{ uri: MASCOT_DATA_URIS.happy }}
+          style={{ width: 104, height: 104 }}
+          resizeMode="contain"
+        />
+      </Animated.View>
+    </View>
+  );
+}
+
 function Plan({ theme }: { theme: ThemeColors }) {
   return (
     <>
-      <View
-        style={[
-          s.finishMark,
-          { backgroundColor: theme.surface2, borderColor: theme.border },
-        ]}
-      >
-        {icon('checkmark', 36, theme.accent)}
-      </View>
+      <PlanMascot theme={theme} />
       <Heading title={copy.planTitle} detail={copy.planDetail} theme={theme} />
       <PlanSummary theme={theme} />
+
+      {/* Promise to Stay on Track (Commitment Contract) */}
+      <View
+        style={[
+          s.promiseCard,
+          {
+            backgroundColor: theme.surface,
+            borderColor: `${theme.accent}30`,
+          },
+        ]}
+      >
+        <View style={s.promiseHeader}>
+          <Ionicons name="ribbon-outline" size={18} color={theme.accent} />
+          <Text style={[s.promiseHeaderTitle, { color: theme.accent }]}>
+            MY COMMITMENT
+          </Text>
+        </View>
+
+        <Text style={[s.promisePrompt, { color: theme.textPrimary }]}>
+          A daily promise to protect my focus:
+        </Text>
+
+        <View style={s.promiseItem}>
+          <Ionicons
+            name="checkmark-circle"
+            size={18}
+            color={theme.accent}
+            style={{ marginTop: 2 }}
+          />
+          <Text style={[s.promiseText, { color: theme.textPrimary }]}>
+            Protect my daily focus session without multitasking.
+          </Text>
+        </View>
+
+        <View style={s.promiseItem}>
+          <Ionicons
+            name="checkmark-circle"
+            size={18}
+            color={theme.accent}
+            style={{ marginTop: 2 }}
+          />
+          <Text style={[s.promiseText, { color: theme.textPrimary }]}>
+            Pause and take a breath before endless scrolling.
+          </Text>
+        </View>
+
+        <View style={s.promiseItem}>
+          <Ionicons
+            name="checkmark-circle"
+            size={18}
+            color={theme.accent}
+            style={{ marginTop: 2 }}
+          />
+          <Text style={[s.promiseText, { color: theme.textPrimary }]}>
+            Build small, consistent habits, one day at a time.
+          </Text>
+        </View>
+
+        <View style={[s.promiseFooter, { borderTopColor: theme.border }]}>
+          <Ionicons name="shield-checkmark" size={15} color={theme.accent} />
+          <Text style={[s.promiseSigned, { color: theme.textSecondary }]}>
+            Pledged by you • Starting today
+          </Text>
+        </View>
+      </View>
+
       <View style={s.privacyNote}>
         {icon('globe-outline', 16, theme.textSecondary)}
         <Text style={[s.note, { color: theme.textSecondary }]}>
@@ -498,21 +848,16 @@ export default function Setup() {
   const {
     step,
     answers,
-    adultConfirmed,
-    confirmAdult,
     saving,
     saveError,
     next,
     back,
-    answer,
     finish,
     go,
     customHabit,
   } = useSetup();
-  const scheme = useColorScheme(),
-    choice = answers.theme?.[0] ?? 'dark';
-  const dark = choice === 'system' ? scheme !== 'light' : choice !== 'light',
-    theme = dark ? setupPalette.night : setupPalette.day;
+  const theme = setupPalette.night,
+    dark = true;
   const motion = useMotion(),
     [appear] = useState(() => new Animated.Value(0)),
     [progress] = useState(() => new Animated.Value(0));
@@ -569,10 +914,6 @@ export default function Setup() {
             )}
           </View>
           <View style={s.inline}>
-            <Image
-              source={require('../../../assets/splash-icon.png')}
-              style={{ width: 21, height: 21, tintColor: theme.textPrimary }}
-            />
             <Text style={[s.brand, { color: theme.textPrimary }]}>
               {copy.brand}
             </Text>
@@ -645,36 +986,6 @@ export default function Setup() {
               { borderTopColor: theme.border, backgroundColor: theme.bg },
             ]}
           >
-            {intro && (
-              <Pressable
-                disabled={saving}
-                onPress={confirmAdult}
-                accessibilityRole="checkbox"
-                accessibilityLabel={copy.age}
-                accessibilityState={{ checked: adultConfirmed }}
-                style={s.ageRow}
-              >
-                <View
-                  style={[
-                    s.check,
-                    {
-                      borderRadius: 6,
-                      borderColor: adultConfirmed
-                        ? theme.accent
-                        : theme.textSecondary,
-                      backgroundColor: adultConfirmed
-                        ? theme.accent
-                        : 'transparent',
-                    },
-                  ]}
-                >
-                  {adultConfirmed && icon('checkmark', 14, theme.bg)}
-                </View>
-                <Text style={[s.small, { color: theme.textSecondary }]}>
-                  {copy.age}
-                </Text>
-              </Pressable>
-            )}
             {saveError && (
               <Text
                 accessibilityRole="alert"
@@ -686,51 +997,31 @@ export default function Setup() {
                 {copy.saveError}
               </Text>
             )}
-            <Button
-              theme={theme}
-              busy={saving}
-              disabled={
-                intro
-                  ? !adultConfirmed
-                  : !!q && (!selected.length || invalidCustom)
-              }
-              label={
-                saving
-                  ? copy.saving
-                  : intro
-                  ? copy.start
-                  : plan
-                  ? copy.finish
-                  : copy.continue
-              }
-              onPress={() => {
-                if (plan) void finish();
-                else next();
-              }}
-            />
-            {intro ? (
-              <Pressable
-                disabled={!adultConfirmed || saving}
-                accessibilityRole="button"
-                accessibilityState={{ disabled: !adultConfirmed || saving }}
+            {plan ? (
+              <SlideToEnter
+                theme={theme}
+                busy={saving}
+                label="Slide to commit & enter →"
+                onSlideComplete={() => void finish()}
+              />
+            ) : (
+              <Button
+                theme={theme}
+                busy={saving}
+                disabled={!!q && (!selected.length || invalidCustom)}
+                label={
+                  saving
+                    ? copy.saving
+                    : intro
+                    ? copy.start
+                    : copy.continue
+                }
                 onPress={() => {
-                  void finish(true);
+                  next();
                 }}
-                style={s.textButton}
-              >
-                <Text
-                  style={[
-                    s.small,
-                    {
-                      color: theme.textSecondary,
-                      opacity: adultConfirmed ? 1 : 0.5,
-                    },
-                  ]}
-                >
-                  {copy.explore}
-                </Text>
-              </Pressable>
-            ) : plan ? (
+              />
+            )}
+            {plan && (
               <Pressable
                 accessibilityRole="button"
                 disabled={saving}
@@ -741,27 +1032,16 @@ export default function Setup() {
                   {copy.edit}
                 </Text>
               </Pressable>
-            ) : (
-              !!q && (
-                <Pressable
-                  accessibilityRole="button"
-                  onPress={() => {
-                    answer(step as QuestionId, []);
-                    next();
-                  }}
-                  style={s.textButton}
-                >
-                  <Text style={[s.small, { color: theme.textSecondary }]}>
-                    {copy.skip}
-                  </Text>
-                </Pressable>
-              )
             )}
             {intro && (
               <Text
                 style={[
                   s.note,
-                  { color: theme.textSecondary, textAlign: 'center' },
+                  {
+                    color: theme.textSecondary,
+                    textAlign: 'center',
+                    marginTop: 12,
+                  },
                 ]}
               >
                 {copy.free}
@@ -801,6 +1081,20 @@ const s = StyleSheet.create({
   },
   headerSide: { width: 48, minHeight: 48, justifyContent: 'center' },
   inline: { flexDirection: 'row', alignItems: 'center', gap: 8 },
+  blinkEye: {
+    position: 'absolute',
+    top: 106,
+    width: 10,
+    height: 16.5,
+    overflow: 'hidden',
+  },
+  eyelid: {
+    position: 'absolute',
+    left: 0,
+    right: 0,
+    height: 7.75,
+    backgroundColor: '#212121',
+  },
   spread: {
     flexDirection: 'row',
     alignItems: 'center',
@@ -928,13 +1222,6 @@ const s = StyleSheet.create({
     textAlign: 'center',
     marginTop: 2,
   },
-  ageRow: {
-    minHeight: 48,
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'center',
-    gap: 10,
-  },
   privacyNote: {
     flexDirection: 'row',
     alignItems: 'flex-start',
@@ -974,11 +1261,110 @@ const s = StyleSheet.create({
     marginVertical: 8,
     marginBottom: 24,
   },
+  planMascotWrap: {
+    alignItems: 'center',
+    justifyContent: 'center',
+    marginVertical: 4,
+    marginBottom: 12,
+    position: 'relative',
+  },
+  planMascotGlow: {
+    position: 'absolute',
+    width: 110,
+    height: 110,
+    borderRadius: 55,
+    borderWidth: 1,
+  },
   planCard: { paddingHorizontal: 16, borderRadius: 8 },
   planRow: {
     flexDirection: 'row',
     gap: 14,
     paddingVertical: 18,
     alignItems: 'center',
+  },
+  sliderTrack: {
+    height: 58,
+    borderRadius: 29,
+    borderWidth: 1,
+    justifyContent: 'center',
+    position: 'relative',
+    overflow: 'hidden',
+  },
+  sliderFill: {
+    position: 'absolute',
+    left: 0,
+    top: 0,
+    bottom: 0,
+    borderRadius: 29,
+  },
+  sliderText: {
+    position: 'absolute',
+    width: '100%',
+    textAlign: 'center',
+    fontFamily: face.semiBold,
+    fontSize: 14,
+    letterSpacing: 0.2,
+  },
+  sliderThumb: {
+    width: 48,
+    height: 48,
+    borderRadius: 24,
+    position: 'absolute',
+    left: 4,
+    alignItems: 'center',
+    justifyContent: 'center',
+    elevation: 3,
+    shadowColor: '#000',
+    shadowOpacity: 0.3,
+    shadowOffset: { width: 0, height: 2 },
+    shadowRadius: 4,
+  },
+  promiseCard: {
+    borderWidth: 1,
+    borderRadius: 12,
+    padding: 16,
+    marginTop: 18,
+    marginBottom: 4,
+  },
+  promiseHeader: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 8,
+    marginBottom: 10,
+  },
+  promiseHeaderTitle: {
+    fontFamily: face.bold,
+    fontSize: 12,
+    letterSpacing: 1.2,
+  },
+  promisePrompt: {
+    fontFamily: face.semiBold,
+    fontSize: 14,
+    lineHeight: 20,
+    marginBottom: 12,
+  },
+  promiseItem: {
+    flexDirection: 'row',
+    alignItems: 'flex-start',
+    gap: 10,
+    marginBottom: 10,
+  },
+  promiseText: {
+    flex: 1,
+    fontFamily: face.regular,
+    fontSize: 13,
+    lineHeight: 19,
+  },
+  promiseFooter: {
+    borderTopWidth: 1,
+    paddingTop: 12,
+    marginTop: 6,
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 7,
+  },
+  promiseSigned: {
+    fontFamily: face.medium,
+    fontSize: 11,
   },
 });

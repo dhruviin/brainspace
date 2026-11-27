@@ -1,12 +1,11 @@
 <?xml version="1.0" encoding="utf-8"?>
 <accessibility-service xmlns:android="http://schemas.android.com/apk/res/android"
-    android:accessibilityEventTypes="typeWindowStateChanged|typeWindowContentChanged|typeViewScrolled"
+    android:accessibilityEventTypes="typeWindowStateChanged|typeWindowContentChanged|typeViewScrolled|typeViewClicked|typeViewSelected|typeWindowsChanged"
     android:accessibilityFeedbackType="feedbackGeneric"
-    android:accessibilityFlags="flagReportViewIds"
+    android:accessibilityFlags="flagReportViewIds|flagRetrieveInteractiveWindows"
     android:canRetrieveWindowContent="true"
-    android:canPerformGestures="false"
+    android:canPerformGestures="true"
     android:canTakeScreenshot="false"
     android:isAccessibilityTool="false"
-    android:notificationTimeout="120"
-    android:packageNames="com.brainspace.app"
+    android:notificationTimeout="50"
     android:description="@string/brainspace_accessibility_description" />

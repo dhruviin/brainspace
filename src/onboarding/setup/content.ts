@@ -8,7 +8,6 @@ export const questionIds = [
   'protect',
   'habits',
   'focus',
-  'theme',
 ] as const;
 export type QuestionId = (typeof questionIds)[number];
 export type SetupStep = 'intro' | QuestionId | 'access' | 'plan';
@@ -33,17 +32,13 @@ export const setupCopy = {
   brand: 'BrainSpace',
   back: 'Go back',
   continue: 'Continue',
-  skip: 'Skip for now',
   start: 'Make room for me',
-  explore: 'Explore first',
   welcomeEyebrow: 'LESS AUTOPILOT. MORE YOU.',
   welcomeTitle: 'A little less phone.\nA lot more life.',
   welcomeDetail:
     'Understand your screen time, find your focus, and change the habits you choose.',
   welcomePill: 'Your pace. Your space.',
   pillars: ['Phone time', 'Deep focus', 'Better habits'],
-  age: 'I’m 18 or older',
-  ageHint: 'BrainSpace is currently designed for adults.',
   free: 'Free to begin · No account needed',
   private: 'Your answers stay on this device.',
   chooseOne: 'Choose one',
@@ -54,7 +49,7 @@ export const setupCopy = {
   edit: 'Review my answers',
   saveError: 'Your changes couldn’t be saved. Please try again.',
   privateUnavailable:
-    'Private saving isn’t available on this device. You can keep this general or skip for now.',
+    'Private saving isn’t available on this device. Choose a general preference to continue.',
   customPlaceholder: 'Name it in your own words',
   customLabel: 'Your private habit',
   customHint: 'A short label is enough. No personal details needed.',
@@ -90,10 +85,10 @@ export const setupCopy = {
     'Live app usage isn’t available on this device yet. You can still use focus sessions and habit tools.',
   reelsDisclosure:
     'This answer is your own estimate. Optional Android reel tracking is experimental and can be connected in the access step.',
-  planEyebrow: 'YOUR STARTING POINT',
-  planTitle: 'Small steps.\nMore room for you.',
+  planEyebrow: 'YOUR COMMITMENT',
+  planTitle: 'You’re Ready to Begin.',
   planDetail:
-    'Here’s a gentle place to begin, shaped by your answers. You can change it anytime in Profile.',
+    'Most people never change their screen time. Today, you took the first real step to reclaim your focus.',
   planNote: 'A starting intention, not a prediction. Every fresh start counts.',
   planFocus: 'One protected focus session',
   planMoment: 'One moment to make your own',
@@ -284,7 +279,7 @@ export const setupQuestions: Record<QuestionId, Question> = {
   habits: {
     eyebrow: 'A SPACE THAT’S JUST YOURS',
     title: 'Any habit you’d like\nprivate support with?',
-    detail: 'Completely optional. Choose up to two, keep it general, or skip.',
+    detail: 'Choose up to two, or keep it general.',
     icon: 'leaf-outline',
     multi: true,
     max: 2,
@@ -302,61 +297,35 @@ export const setupQuestions: Record<QuestionId, Question> = {
     ],
   },
   focus: {
-    eyebrow: 'START SMALL. KEEP GOING.',
-    title: 'What feels like a\ndoable first focus session?',
+    eyebrow: 'DAILY FOCUS TIMER',
+    title: 'How long can you focus\nwithout checking your phone?',
     detail:
-      'This is time for something you care about. You can adjust it later.',
+      'Choose a comfortable timer for studying or working. You can adjust this anytime.',
     icon: 'timer-outline',
     options: [
       {
         value: '15',
         title: '15 minutes',
-        detail: 'A small, comfortable start.',
+        detail: 'A quick and easy start.',
         icon: 'leaf-outline',
       },
       {
         value: '25',
         title: '25 minutes',
-        detail: 'A little room to find your flow.',
+        detail: 'Standard focus timer (Recommended).',
         icon: 'timer-outline',
       },
       {
         value: '45',
         title: '45 minutes',
-        detail: 'Space to get into something meaningful.',
+        detail: 'Deep study or uninterrupted work.',
         icon: 'scan-outline',
       },
       {
         value: '60',
         title: '60 minutes',
-        detail: 'A longer stretch of uninterrupted time.',
+        detail: 'Long stretch of full focus.',
         icon: 'sunny-outline',
-      },
-    ],
-  },
-  theme: {
-    eyebrow: 'MAKE YOURSELF AT HOME',
-    title: 'Which space\nfeels like you?',
-    detail: 'Preview your Daily Compass. Your choice carries into the app.',
-    icon: 'color-palette-outline',
-    options: [
-      {
-        value: 'dark',
-        title: 'Midnight',
-        detail: 'Quiet, dark, and easy on the eyes.',
-        icon: 'moon-outline',
-      },
-      {
-        value: 'light',
-        title: 'Arctic',
-        detail: 'Light, clear, and a little brighter.',
-        icon: 'sunny-outline',
-      },
-      {
-        value: 'system',
-        title: 'Follow my device',
-        detail: 'Go with your system appearance.',
-        icon: 'phone-portrait-outline',
       },
     ],
   },

@@ -8,7 +8,6 @@ export type SavedSetup = {
   step: SetupStep;
   answers: SetupAnswers;
   customHabit: string;
-  adultConfirmed: boolean;
   completed: boolean;
   skipped: boolean;
   timezone: string;
@@ -18,7 +17,6 @@ export const defaults: SavedSetup = {
   step: 'intro',
   answers: {},
   customHabit: '',
-  adultConfirmed: false,
   completed: false,
   skipped: false,
   timezone: '',
@@ -35,7 +33,6 @@ export function setupSteps(answers: SetupAnswers): SetupStep[] {
     'protect',
     ...(answers.goals?.includes('habits') ? ['habits' as const] : []),
     'focus',
-    'theme',
     'access',
     'plan',
   ];
@@ -92,7 +89,6 @@ export function restoreSetup(value: unknown): SavedSetup {
     'protect',
     'habits',
     'focus',
-    'theme',
   ];
   for (const id of allowed) {
     const selection = raw.answers?.[id];
@@ -113,7 +109,6 @@ export function restoreSetup(value: unknown): SavedSetup {
       answers.habits?.includes('custom') && typeof raw.customHabit === 'string'
         ? raw.customHabit.slice(0, 60)
         : '',
-    adultConfirmed: raw.adultConfirmed === true,
     completed: raw.completed === true,
     skipped: raw.skipped === true,
     timezone: typeof raw.timezone === 'string' ? raw.timezone : '',

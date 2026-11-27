@@ -24,10 +24,23 @@ class PermissionModule(private val context: ReactApplicationContext) : ReactCont
         return mode == AppOpsManager.MODE_ALLOWED
     }
     private fun accessibility(): Boolean {
-        val manager = context.getSystemService(Context.ACCESSIBILITY_SERVICE) as AccessibilityManager
-        return manager.getEnabledAccessibilityServiceList(AccessibilityServiceInfo.FEEDBACK_ALL_MASK).any {
-            val service = it.resolveInfo.serviceInfo
-            service.packageName == context.packageName && service.name == ReelAccessibilityService::class.java.name
+        return try {
+            val expectedComponent = ComponentName(context, ReelAccessibilityService::class.java).flattenToString()
+            val expectedShortComponent = ComponentName(context, ReelAccessibilityService::class.java).flattenToShortString()
+            val enabledServices = Settings.Secure.getString(
+                context.contentResolver,
+                Settings.Secure.ENABLED_ACCESSIBILITY_SERVICES
+            ) ?: ""
+            if (enabledServices.contains(expectedComponent) || enabledServices.contains(expectedShortComponent)) {
+                return true
+            }
+            val manager = context.getSystemService(Context.ACCESSIBILITY_SERVICE) as? AccessibilityManager
+            manager?.getEnabledAccessibilityServiceList(AccessibilityServiceInfo.FEEDBACK_ALL_MASK)?.any {
+                val service = it.resolveInfo.serviceInfo
+                service.packageName == context.packageName && service.name == ReelAccessibilityService::class.java.name
+            } ?: false
+        } catch (_: Throwable) {
+            false
         }
     }
     @ReactMethod fun getSnapshot(promise: Promise) {

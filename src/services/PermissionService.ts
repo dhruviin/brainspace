@@ -4,6 +4,14 @@ export type PermissionKey = 'usage' | 'overlay' | 'popup' | 'battery' | 'autosta
 export const reelApps = [
   { packageName: 'com.instagram.android', name: 'Instagram Reels' },
   { packageName: 'com.google.android.youtube', name: 'YouTube Shorts' },
+  { packageName: 'com.zhiliaoapp.musically', name: 'TikTok' },
+  { packageName: 'com.ss.android.ugc.trill', name: 'TikTok' },
+  { packageName: 'com.facebook.katana', name: 'Facebook Reels' },
+  { packageName: 'com.facebook.lite', name: 'Facebook Lite Reels' },
+  { packageName: 'com.snapchat.android', name: 'Snapchat Spotlight' },
+  { packageName: 'com.reddit.frontpage', name: 'Reddit Watch' },
+  { packageName: 'com.twitter.android', name: 'X / Twitter Video' },
+  { packageName: 'com.pinterest', name: 'Pinterest Watch' },
 ] as const;
 export interface AccessSnapshot {
   available: boolean;

@@ -17,7 +17,6 @@ type SetupState = SavedSetup & {
   back: () => boolean;
   answer: (id: QuestionId, values: string[]) => void;
   setCustomHabit: (label: string) => void;
-  confirmAdult: () => void;
   finish: (skipped?: boolean) => Promise<void>;
   edit: () => void;
 };
@@ -28,7 +27,6 @@ function snapshot(state: SetupState): SavedSetup {
     step,
     answers,
     customHabit,
-    adultConfirmed,
     completed,
     skipped,
     timezone,
@@ -38,7 +36,6 @@ function snapshot(state: SetupState): SavedSetup {
     step,
     answers,
     customHabit,
-    adultConfirmed,
     completed,
     skipped,
     timezone,
@@ -81,8 +78,7 @@ export const useSetup = create<SetupState>((set, get) => {
       const state = get(),
         path = setupSteps(state.answers),
         next = path[path.indexOf(state.step) + 1];
-      if (next && (state.step !== 'intro' || state.adultConfirmed))
-        commit({ step: next });
+      if (next) commit({ step: next });
     },
     back: () => {
       const state = get(),
@@ -104,9 +100,8 @@ export const useSetup = create<SetupState>((set, get) => {
     },
     setCustomHabit: (customHabit) =>
       commit({ customHabit: customHabit.slice(0, 60) }),
-    confirmAdult: () => commit({ adultConfirmed: !get().adultConfirmed }),
     finish: async (skipped = false) => {
-      if (get().saving || !get().adultConfirmed) return;
+      if (get().saving) return;
       set({ saving: true, saveError: false });
       let timezone = '';
       try {
@@ -132,7 +127,6 @@ export const useSetup = create<SetupState>((set, get) => {
         completed: false,
         skipped: false,
         step: 'goals',
-        adultConfirmed: true,
       }),
   };
 });

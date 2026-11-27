@@ -27,7 +27,7 @@ export function createSetupPersistence(
         const legacy = await local.getItem('brainspace-story-v1');
         try {
           if (legacy && JSON.parse(legacy)?.state?.completed === true) {
-            return restoreSetup({ completed: true, adultConfirmed: true });
+            return restoreSetup({ completed: true });
           }
         } catch {
           /* An old draft starts with the new welcome. */
